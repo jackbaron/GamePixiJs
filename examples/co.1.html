@@ -1,0 +1,231 @@
+<html>
+        <meta charset="utf-8">
+    <title>
+        
+        Cơ
+    </title>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            //Aliases
+            let Application = PIXI.Application,
+                Container = PIXI.Container,
+                loader = PIXI.loader,
+                Text = PIXI.Text,
+                TextStyle = PIXI.TextStyle,
+                resources = PIXI.loader.resources,
+                TextureCache = PIXI.utils.TextureCache,
+                Sprite = PIXI.Sprite,
+                Rectangle = PIXI.Rectangle;
+
+                let app = new Application ({
+                    width : 240,
+                    height : 240,
+                    antialiasing: true, //background
+                    transparent: false, //border
+                    resolution: 1
+                })
+
+                loader
+                    .add([
+                        "images/startco.png",
+                        "images/1.png",
+                        "images/2.png",
+                        "images/bgco.png",
+                        "images/player_on.png",
+                        "images/player_off.png",
+                        "images/cpu_on.png",
+                        "images/cpu_off.png",
+                        "images/turn_player.png",
+                        "images/chess_cpu.png",
+                        "images/chess_player.png",
+                        "images/yellow.png",
+                        "images/hand.png"
+                    ])
+                    .load(setup);
+                
+                document.body.appendChild(app.view);
+                
+                let screenStart = false, tmp = false; // screnn intro game
+                let colorChesse = false; // default black = true white = false;
+
+                let imagePlayer = "images/player_on.png",
+                    imageCpu    = "images/cpu_off.png",
+                    cheesePlayer = "images/chess_player.png",
+                    chessCpu    = "images/chess_cpu.png",
+                    yellow      = "images/yellow.png",
+                    turnPlayer  = "images/turn_player.png",
+                    handImage   = "images/hand.png",
+                    pointPlayerText = "2",
+                    pointCpuText   = "2";
+                
+                let mode = "easy"; // default mode game easy and hard
+
+                // set text point cpu player
+                let style = new TextStyle ({
+                    fontFamily: "Arial",
+                    fontSize: 18,
+                    fontWeight : "bold"
+                });
+                let pointPlayer = new Text(pointPlayerText, style);
+                let pointCpu = new Text(pointCpuText, style);
+
+                // set sai so ô vuông
+                let distanceX = 2.5,
+                    distanceY = 2.4;
+
+                let sumpointPlayer = [],
+                    sumpointCpu    = [];
+
+                function setup() {
+                    // set background
+                    let background = new Sprite(resources["images/startco.png"].texture),
+                        player1 = new Sprite(resources["images/1.png"].texture),
+                        player2 = new Sprite(resources["images/2.png"].texture);
+                    app.stage.addChild(background);
+                    app.stage.addChild(player1);
+                    app.stage.addChild(player2);
+
+                    let one = keyboard(97), // 1
+                        two = keyboard(98),
+                        four = keyboard(100),
+                        five = keyboard(101),
+                        six = keyboard(102),
+                        eight = keyboard(104);
+
+                    //create container group
+                    let groupContainer = new Container();
+                    groupContainer.position.set(28, 33);
+                    let centerScreen = app.stage.width - player1.width;
+                    //set position
+                    player1.position.set(centerScreen/2, 155);
+                    player2.position.set(centerScreen/2, 183);
+                    
+                    // set display start game 
+                    let backgroundStart = new Sprite(resources["images/bgco.png"].texture),
+                        topImagePlayer = new Sprite(resources[imagePlayer].texture),
+                        topImageCpu = new Sprite(resources[imageCpu].texture),
+                        turnPlayerText = new Sprite(resources[turnPlayer].texture);
+                        chessCpuDisplay = new Sprite(resources[chessCpu].texture); // color chess cpu
+                        chessCpuDisplay1 = new Sprite(resources[chessCpu].texture); // color chess cpu
+                        yellowDisplay = new Sprite(resources[yellow].texture); // Suggest the next country
+                        chessPlayerDisplay = new Sprite(resources[cheesePlayer].texture), // color chess player
+                        chessPlayerDisplay1 = new Sprite(resources[cheesePlayer].texture)// color chess player
+                        handDisplay = new Sprite(resources[handImage].texture);
+                        groupContainer.addChild(
+                            chessCpuDisplay,
+                            chessPlayerDisplay,
+                            yellowDisplay,
+                            chessCpuDisplay1,
+                            chessPlayerDisplay1,
+                            handDisplay
+                        )
+                    app.stage.addChild(backgroundStart, groupContainer, topImagePlayer, topImageCpu, turnPlayerText);
+                    backgroundStart.visible = topImagePlayer.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible = yellowDisplay.visible = chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = false ;
+                    
+                    //set position top image player
+                    topImagePlayer.position.set(10, 3);
+                    topImageCpu.position.set(120, 3);
+                    turnPlayerText.position.set(3, 227);
+                    
+                    // hand = chess = 20, yellow = 21, app =240, container = 240 - container.x*2 = 184, mỗi ô vuông bằng = 184/8 = 23. yellow = 21 + (23-21)
+                    // set width 
+                    let containerWidth = containerHeight = (yellowDisplay.width * 8 + 16),
+                        centerScreenWidth = containerWidth / 2 - chessCpuDisplay.width - 3, // chess = 20 => chess = 20 +3
+                        centerScreenHeight = containerHeight / 2 - chessCpuDisplay.width - 3;
+                    // console.log(chessCpuDisplay.texture.textureCacheIds[0]); get name image
+                    //set chess cpu and player
+                    chessCpuDisplay.position.set(centerScreenWidth , centerScreenHeight);
+                    chessCpuDisplay1.position.set(centerScreenWidth  + yellowDisplay.width + 2, centerScreenHeight + yellowDisplay.height + 2);
+                    sumpointCpu.push(chessCpuDisplay, chessCpuDisplay1); // add chess cpu to array
+                    // player
+                    chessPlayerDisplay.position.set(chessCpuDisplay.x + yellowDisplay.width + 2, chessCpuDisplay.y);
+                    chessPlayerDisplay1.position.set(chessCpuDisplay1.x - yellowDisplay.width - 2, chessCpuDisplay1.y);
+                    sumpointPlayer.push(chessPlayerDisplay, chessPlayerDisplay1);  // add chess player to array
+                    // set position hand 
+                    handDisplay.position.set(centerScreenWidth - 3, centerScreenHeight + (chessCpuDisplay.height)/2 -3);
+                    // add text set position point
+                    pointPlayer.position.set(topImagePlayer.x + topImagePlayer.width + 10, 1);
+                    pointCpu.position.set(topImageCpu.x + topImageCpu.width + 10, 1);
+                    app.stage.addChild(pointPlayer, pointCpu);
+                    //set hand move
+                    handDisplay.vx = 0;
+                    handDisplay.vy = 0;
+                    one.press = () => {
+                        // check the first
+                        if (screenStart && !tmp) {
+                            tmp = true;
+                            backgroundStart.visible = topImagePlayer.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible = yellowDisplay.visible = chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = true;
+                        }
+                    };
+
+                    two.press = () => {
+                        // check the first
+                        if (screenStart && !tmp) { 
+                            mode = "hard";
+                            tmp = true;
+                            backgroundStart.visible = topImagePlayer.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible = yellowDisplay.visible = chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = true;
+                        }    
+                    };
+                    console.log(handDisplay.x)  
+                    four.press = () => {
+                        if (screenStart && tmp) {
+                            handDisplay.vx = -(yellowDisplay.width + 2);
+                            handDisplay.vy = 0;
+                        }
+                        // Check min width container
+                        if (handDisplay.x - handDisplay.vx < yellowDisplay.width + 3) {
+                            handDisplay.vx = containerWidth - yellowDisplay.width - 3;
+                        }
+                        play(handDisplay.vx, handDisplay.vy);
+                    };
+
+                    four.release = () => {
+                        if (!six.isDown && handDisplay.vy === 0) {
+                            handDisplay.vx = 0;
+                        }    
+                    };
+                }
+
+                function play(vx, vy) {
+                    handDisplay.x += handDisplay.vx;
+                    handDisplay.y += handDisplay.vy;
+                }
+
+                function keyboard(keyCode) {
+                    var key = {};
+                    key.code = keyCode;
+                    key.isDown = false;
+                    key.isUp = true;
+                    key.press = undefined;
+                    key.release = undefined;
+                    
+
+                    key.downHandler = event => {
+                        if (event.keyCode === key.code) {
+                            if (!screenStart && (event.keyCode === 97 || event.keyCode === 98)) {
+                                screenStart = true;
+                            }
+                            if (key.isUp && key.press) key.press();
+                            key.isDown = true;
+                            key.isUp = false;
+                        }
+                        event.preventDefault();
+                    };
+
+                    key.upHandler = event => {
+                        if (event.keyCode === key.code) {
+                            if (key.isDown && key.release) key.release();
+                            key.isDown = false;
+                            key.isUp = true;
+                        }
+                        event.preventDefault();
+                    };
+                    
+                    window.addEventListener("keydown" , key.downHandler.bind(key), false);
+                    window.addEventListener("keyup", key.upHandler.bind(key), false);
+                    return key;
+                }
+        </script>
+    </body>
+</html>

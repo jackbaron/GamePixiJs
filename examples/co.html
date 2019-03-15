@@ -1,0 +1,483 @@
+<html>
+        <meta charset="utf-8">
+    <title>
+        
+        Cơ
+    </title>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            //Aliases
+            let Application = PIXI.Application,
+                Container = PIXI.Container,
+                loader = PIXI.loader,
+                Text = PIXI.Text,
+                TextStyle = PIXI.TextStyle,
+                resources = PIXI.loader.resources,
+                TextureCache = PIXI.utils.TextureCache,
+                Sprite = PIXI.Sprite,
+                Rectangle = PIXI.Rectangle;
+
+                let app = new Application ({
+                    width : 240,
+                    height : 240,
+                    antialiasing: true, //background
+                    transparent: false, //border
+                    resolution: 1
+                });
+                
+                let playerTurn = cpuTurn = false;
+
+                let imagePlayer = "player_on.png",
+                    imageCpu    = "cpu_off.png",
+                    cheesePlayer = "chess_player.png",
+                    chessCpu    = "chess_cpu.png",
+                    yellow      = "yellow.png",
+                    turnPlayer  = "turn_player.png",
+                    handImage   = "hand.png",
+                    pointPlayerText = "2",
+                    pointCpuText   = "2";
+                
+                let mode = "easy"; // default mode game easy and hard
+
+                // set text point cpu player
+                let style = new TextStyle ({
+                    fontFamily: "Arial",
+                    fontSize: 18,
+                    fontWeight : "bold"
+                });
+                let pointPlayer = new Text(pointPlayerText, style);
+                let pointCpu = new Text(pointCpuText, style);
+
+                let chessPiecePlayer = [],
+                    chessPieceCpu    = [],
+                    yellowSuggest    = [],
+                    listChessChange  = [],
+                    suggestNextDisplay = [];
+
+                document.body.appendChild(app.view);
+
+                loader
+                    .add("images/chess.json")
+                    .load(setup);
+
+                let change1, change2, change3, groupContainer,
+                containerWidth,
+                centerScreen,
+                centerScreenWidth,
+                centerScreenHeight,
+                checkSuggestNextDisplay,
+                backgroundStart, topImagePlayer, topImageCpu, turnPlayerText, chessCpuDisplay, chessCpuDisplay1, yellowDisplay, chessPlayerDisplay, chessPlayerDisplay1, handDisplay;
+                
+                
+                function setup() {
+                    // set background
+                    let background = new Sprite(resources["images/chess.json"].textures["startco.png"]),
+                        mode1 = new Sprite(resources["images/chess.json"].textures["1.png"]), // easy
+                        mode2 = new Sprite(resources["images/chess.json"].textures["2.png"]); // hard
+
+                    // set change chess
+                    change1 = new Sprite(resources["images/chess.json"].textures["change1.png"]);
+                    change2 = new Sprite(resources["images/chess.json"].textures["change2.png"]);
+                    change3 = new Sprite(resources["images/chess.json"].textures["change3.png"]);
+                    // set click choose mode
+                    mode1.interactive = mode2.interactive = true;
+                    // Shows hand cursor
+                    mode1.buttonMode = mode2.buttonMode = true;
+                    
+                    app.stage.addChild(background, mode1, mode2);
+
+                    //create container group
+                    groupContainer = new Container();
+                    groupContainer.position.set(28, 33);
+                    centerScreen = app.stage.width - mode1.width;
+                    //set position
+                    mode1.position.set(centerScreen/2, 155);
+                    mode2.position.set(centerScreen/2, 183);
+                    
+                    // set display start game 
+                    backgroundStart = new Sprite(resources["images/chess.json"].textures["bgco.png"]),
+                        topImagePlayer = new Sprite(resources["images/chess.json"].textures[imagePlayer]),
+                        topImageCpu = new Sprite(resources["images/chess.json"].textures[imageCpu]),
+                        turnPlayerText = new Sprite(resources["images/chess.json"].textures[turnPlayer]);
+                        chessCpuDisplay = new Sprite(resources["images/chess.json"].textures[chessCpu]); // color chess cpu
+                        chessCpuDisplay1 = new Sprite(resources["images/chess.json"].textures[chessCpu]); // color chess cpu
+                        yellowDisplay = new Sprite(resources["images/chess.json"].textures[yellow]); // Suggest the next country
+                        chessPlayerDisplay = new Sprite(resources["images/chess.json"].textures[cheesePlayer]), // color chess player
+                        chessPlayerDisplay1 = new Sprite(resources["images/chess.json"].textures[cheesePlayer])// color chess player
+                        handDisplay = new Sprite(resources["images/chess.json"].textures[handImage]);
+                        groupContainer.addChild(
+                            chessCpuDisplay,
+                            chessPlayerDisplay,
+                            yellowDisplay,
+                            chessCpuDisplay1,
+                            chessPlayerDisplay1,
+                            handDisplay
+                        )
+                    app.stage.addChild(backgroundStart, groupContainer, topImagePlayer, topImageCpu, turnPlayerText);
+                    backgroundStart.visible = pointPlayer.visible = pointCpu.visible = topImagePlayer.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible = yellowDisplay.visible = chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = false ;
+                    
+                    //set position top image player
+                    topImagePlayer.position.set(10, 3);
+                    topImageCpu.position.set(120, 3);
+                    turnPlayerText.position.set(3, 227);
+                    
+                    // hand = chess = 20, yellow = 21, app =240, container = 240 - container.x*2 = 184, mỗi ô vuông bằng = 184/8 = 23. yellow = 21 + (23-21)
+                    // set width 
+                    containerWidth = containerHeight = (yellowDisplay.width * 8 + 16);
+                    centerScreenWidth = containerWidth / 2 - chessCpuDisplay.width - 3; // chess = 20 => chess = 20 +3
+                    centerScreenHeight = containerHeight / 2 - chessCpuDisplay.width - 3;
+                    // console.log(chessCpuDisplay.texture.textureCacheIds[0]); get name image
+                    //set chess cpu and player
+                    chessCpuDisplay.position.set(centerScreenWidth , centerScreenHeight);
+                    chessCpuDisplay1.position.set(centerScreenWidth  + yellowDisplay.width + 2, centerScreenHeight + yellowDisplay.height + 2);
+                    // push array list cpu
+                    chessPieceCpu[chessCpuDisplay.x +"-" + chessCpuDisplay.y] = chessCpuDisplay;
+                    chessPieceCpu[chessCpuDisplay1.x + "-" + chessCpuDisplay1.y] = chessCpuDisplay1;
+                    // player
+                    chessPlayerDisplay.position.set(chessCpuDisplay.x + yellowDisplay.width + 2, chessCpuDisplay.y);
+                    chessPlayerDisplay1.position.set(chessCpuDisplay1.x - yellowDisplay.width - 2, chessCpuDisplay1.y);
+                    // push array list player
+                    chessPiecePlayer[chessPlayerDisplay1.x +"-" + chessCpuDisplay1.y] = chessPlayerDisplay1;
+                    chessPiecePlayer[chessPlayerDisplay.x + "-" + chessCpuDisplay.y] = chessPlayerDisplay;
+                    // set position hand 
+                    handDisplay.position.set(centerScreenWidth - 3, centerScreenHeight + (chessCpuDisplay.height)/2 -3);
+                    // add text set position point
+                    pointPlayer.position.set(topImagePlayer.x + topImagePlayer.width + 10, 1);
+                    pointCpu.position.set(topImageCpu.x + topImageCpu.width + 10, 1);
+                    app.stage.addChild(pointPlayer, pointCpu);
+                    //set hand move
+                    handDisplay.vx = 0;
+                    handDisplay.vy = 0;
+                    
+
+                    // set event click choose mode
+                    mode1.on('pointerdown', function(e) {
+                        mode = "easy";
+                        backgroundStart.visible = topImagePlayer.visible = pointPlayer.visible = pointCpu.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible =  chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = true;
+                        playerTurn= true;
+                        suggestNextDisplay = suggestNext(chessPiecePlayer);
+                        //remove empty array
+                        checkSuggestNextDisplay = suggestNextDisplay.filter(function (el) {
+                            return el != null;
+                        });
+                        // remove screen intro game
+                        background.destroy();
+                        mode1.destroy();
+                        mode2.destroy();
+                        displaySuggest(suggestNextDisplay);
+                    });
+
+                    mode2.on('pointerdown', function(e) {
+                        mode = "hard";
+                        backgroundStart.visible = topImagePlayer.visible = pointPlayer.visible = pointCpu.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible = chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = true;
+                        playerTurn = true;
+                        // remove screen intro game
+                        background.destroy();
+                        mode1.destroy();
+                        mode2.destroy();
+                        suggestNextDisplay = suggestNext(chessPiecePlayer);
+                        //remove empty array
+                        checkSuggestNextDisplay = suggestNextDisplay.filter(function (el) {
+                            return el != null;
+                        });
+                        displaySuggest(suggestNextDisplay);
+                    });  
+                }
+
+                // click suggest 
+                // chessPieceX coordinates x
+                // chessPieceY coordinates y
+                // i direction
+                function playChess(chessPieceX, chessPieceY, direction) {
+                    let hunmanTextures = [], i;
+                    if (playerTurn) {
+                        for (i = 3; i >= 0; i--) {
+                            var texture = PIXI.Texture.fromFrame('change' + i + '.png');
+                            hunmanTextures.push(texture);
+                        }
+
+                        // create chess where coordinates click
+                        chessPiecePlayer[chessPieceX + "-" + chessPieceY] = new Sprite(resources["images/chess.json"].textures[cheesePlayer]);
+                        chessPiecePlayer[chessPieceX + "-" + chessPieceY].position.set(chessPieceX, chessPieceY);
+                        groupContainer.addChild(chessPiecePlayer[chessPieceX + "-" + chessPieceY]);
+                        handDisplay.position.set(chessPieceX- 3, chessPieceY + (chessCpuDisplay.height)/2 -3);
+                        groupContainer.addChild(handDisplay);
+                        // remove all suggest
+                        yellowSuggest.forEach(element => {
+                            element.destroy();
+                        });
+                        // remove sprite
+                        listChessChange[direction].forEach( value => {
+                            let animateHunman = new PIXI.extras.AnimatedSprite(hunmanTextures);
+                            animateHunman.x = chessPieceCpu[value].x;
+                            animateHunman.y = chessPieceCpu[value].y;
+                            animateHunman.gotoAndPlay(0);
+                            animateHunman.animationSpeed = 0.05;
+                            animateHunman.loop = false;
+                            groupContainer.addChild(animateHunman);
+
+                            chessPiecePlayer[value] = chessPieceCpu[value];
+                            // remove sprite
+                            chessPieceCpu[value].destroy();
+                            delete chessPieceCpu[value];
+                        })
+                        // change point
+                        pointPlayer.setText(parseInt(pointPlayerText) + listChessChange[direction].length + 1);
+                        pointCpu.setText(parseInt(pointCpuText) - listChessChange[direction].length);
+                        // turn off player turn on cpu
+                        playerTurn = false;
+                        cpuTurn = true;
+                        yellowSuggest = [];  
+                        suggestNextDisplay = suggestNext(chessPieceCpu);
+                        setTimeout(function(){ displaySuggest(suggestNextDisplay);}, 3000);  
+                        // 
+                    } else {
+                        
+                        for (i = 0; i >= 3; i++) {
+                            var texture = PIXI.Texture.fromFrame('change' + i + '.png');
+                            hunmanTextures.push(texture);
+                        }
+                        //cpu
+                        // create chess where coordinates click
+                        chessPieceCpu[chessPieceX + "-" + chessPieceY] = new Sprite(resources["images/chess.json"].textures[chessCpu]);
+                        chessPieceCpu[chessPieceX + "-" + chessPieceY].position.set(chessPieceX, chessPieceY);
+                        groupContainer.addChild(chessPieceCpu[chessPieceX + "-" + chessPieceY]);
+                        // remove sprite
+                        listChessChange[direction].forEach( value => {
+                            // remove sprite
+                            let animateHunman = new PIXI.extras.AnimatedSprite(hunmanTextures);
+                            animateHunman.x = chessPiecePlayer[value].x;
+                            animateHunman.y = chessPiecePlayer[value].y;
+                            animateHunman.gotoAndPlay(0);
+                            animateHunman.animationSpeed = 0.05;
+                            animateHunman.loop = false;
+                            groupContainer.addChild(animateHunman);
+
+                            // add chess cpu
+                            chessPieceCpu[value] = chessPiecePlayer[value];
+                            //remove chess cpu;
+                            delete chessPiecePlayer[value];
+                        });
+                        
+                        // change point
+                        pointPlayer.setText(parseInt(pointPlayerText) - listChessChange[direction].length);
+                        pointCpu.setText(parseInt(pointCpuText) + listChessChange[direction].length + 1);
+                        // turn on player turn off cpu
+                        playerTurn = true;
+                        cpuTurn = true;
+                        // remove all suggest
+                        yellowSuggest = [];
+                        //suggesst CPU
+                        suggestNextDisplay = suggestNext(chessPiecePlayer);
+                        setTimeout(function(){ displaySuggest(suggestNextDisplay);}, 3000);  
+                    }
+                } 
+
+
+                //     
+                // display directions suggest
+                function displaySuggest(coordinates) {
+                    let myArray = []
+                    for (let i in coordinates) {
+                        yellowSuggest[i] = new Sprite(resources["images/chess.json"].textures[yellow]);
+                        yellowSuggest[i].position.set(coordinates[i].x, coordinates[i].y);
+                        // set click choose mode
+                        yellowSuggest[i].interactive = true;
+                        // Shows hand cursor
+                        yellowSuggest[i].buttonMode = true;
+                        yellowSuggest[i].on('pointerdown', function(e) {
+                            playChess(coordinates[i].x, coordinates[i].y, i);
+                        });
+                        groupContainer.addChild(yellowSuggest[i]);
+                        if (playerTurn) {
+                            // display suggest
+                            groupContainer.addChild(yellowSuggest[i]);
+                        } else {
+                            myArray.push(i);
+                        }
+                    }
+                    if (!playerTurn) {
+                        // cpu random pointerdown
+                        let rand = myArray[Math.floor(Math.random() * myArray.length)];
+                        playChess(yellowSuggest[rand].x, yellowSuggest[rand].y, rand);
+                    }
+                }
+
+                // check suggestNext    
+                function suggestNext(listChess) {
+                    let coordinatesSuggest = [];
+                    for (let element in listChess) {
+                        // console.log(listChess[element]);
+                        // check left 
+                        // check 8 directions for 1 chess piece
+                        for ( let i = 0; i <= 7 ; i++) {
+                            coordinatesSuggest = checkMove(listChess[element].x, listChess[element].y, i, coordinatesSuggest);
+                        }
+                    }
+                    // return coordinates suggest
+                    return coordinatesSuggest;
+                }
+                
+                // chessPieceX coordinates x
+                // chessPieceY coordinates y
+                function checkMove(chessPieceX, chessPieceY, directions, spriteSuggest) {
+                    let move = (yellowDisplay.width + 2);
+                    let moveLeft, next, moveRight, moveTop, moveBottom, listArr;
+                    // check left
+                    if (directions === 0) {
+                        moveLeft = chessPieceX - move;
+                        // check limit on the left
+                        if (moveLeft < yellowDisplay.width + 3) {
+                            return; //limit left
+                        }
+                        // check exitst chesse piece cpu or chess piece player
+                        if (playerTurn) {
+                            if (chessPieceCpu.hasOwnProperty(moveLeft + "-" + chessPieceY)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([moveLeft + "-" + chessPieceY]);
+                                } else {
+                                    listChessChange[directions] = [moveLeft + "-" + chessPieceY];
+                                }
+                                // exitst
+                                chessPieceX = moveLeft;
+                                spriteSuggest[directions] = {"x" : chessPieceX - move, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        } else {
+                            if (chessPiecePlayer.hasOwnProperty(moveLeft + "-" + chessPieceY)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([moveLeft + "-" + chessPieceY]);
+                                } else {
+                                    listChessChange[directions] = [moveLeft + "-" + chessPieceY];
+                                }
+                                // exitst
+                                chessPieceX = moveLeft;
+                                spriteSuggest[directions] = {"x" : chessPieceX - move, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        }
+                        
+                    } else if (directions === 4) {
+                        // check right
+                        moveRight = chessPieceX + move;
+                        // check limit on the right
+                        if (moveRight > containerWidth) {
+                            return; //limit right
+                        }
+
+                        if (playerTurn) {
+                            if (chessPieceCpu.hasOwnProperty(moveRight + "-" + chessPieceY)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([moveRight + "-" + chessPieceY]);
+                                } else {
+                                    listChessChange[directions] = [moveRight + "-" + chessPieceY];
+                                }
+                                // exitst
+                                chessPieceX = moveRight;
+                                spriteSuggest[directions] = {"x" : chessPieceX  + move, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        } else {
+                            if (chessPiecePlayer.hasOwnProperty(moveRight + "-" + chessPieceY)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([moveRight + "-" + chessPieceY]);
+                                } else {
+                                    listChessChange[directions] = [moveRight + "-" + chessPieceY];
+                                }
+                                // exitst
+                                chessPieceX = moveRight;
+                                spriteSuggest[directions] = {"x" : chessPieceX  + move, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        }
+                        
+                    } else if (directions === 2) {
+                        // check top
+                        moveTop = chessPieceY - move;
+                        // check limit on the top
+                        if (moveTop < yellowDisplay.width + 3) {
+                            return; //limit top
+                        }
+                        if (playerTurn) {
+                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + moveTop)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveTop]);
+                                } else {
+                                    listChessChange[directions] = [chessPieceX + "-" + moveTop];
+                                }
+                                // exitst
+                                chessPieceY = moveTop;
+                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY - move};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        } else {
+                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + moveTop)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveTop]);
+                                } else {
+                                    listChessChange[directions] = [chessPieceX + "-" + moveTop];
+                                }
+                                // exitst
+                                chessPieceY = moveTop;
+                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY - move};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }    
+                        }
+                        
+                    } else if (directions === 6) {
+                        // check bottom
+                        moveBottom = chessPieceY + move;
+                        // check limit on the bottom
+                        if (moveRight > containerHeight) {
+                            return; //limit bottom
+                        }
+                        if (playerTurn) {
+                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + moveBottom)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveBottom]);
+                                } else {
+                                    listChessChange[directions] = [chessPieceX + "-" + moveBottom];
+                                }
+                                // exitst
+                                chessPieceY = moveBottom;
+                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY + move};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        } else {
+                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + moveBottom)) {
+                                //add list chess click change
+                                listArr = listChessChange[directions];
+                                if (listArr !== undefined) {
+                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveBottom]);
+                                } else {
+                                    listChessChange[directions] = [chessPieceX + "-" + moveBottom];
+                                }
+                                // exitst
+                                chessPieceY = moveBottom;
+                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY + move};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                            }
+                        }
+                        
+                    }
+
+                    return spriteSuggest;
+                }
+        </script>
+    </body>
+</html>

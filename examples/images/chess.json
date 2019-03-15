@@ -1,0 +1,148 @@
+{"frames": {
+
+"1.png":
+{
+	"frame": {"x":1,"y":511,"w":78,"h":24},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":11,"y":0,"w":78,"h":24},
+	"sourceSize": {"w":98,"h":24}
+},
+"2.png":
+{
+	"frame": {"x":1,"y":485,"w":80,"h":24},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":7,"y":0,"w":80,"h":24},
+	"sourceSize": {"w":98,"h":24}
+},
+"bgco.png":
+{
+	"frame": {"x":1,"y":1,"w":240,"h":240},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":240,"h":240},
+	"sourceSize": {"w":240,"h":240}
+},
+"change0.png":
+{
+	"frame": {"x":138,"y":525,"w":20,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
+"change1.png":
+{
+	"frame": {"x":182,"y":525,"w":17,"h":20},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":0,"w":17,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
+"change2.png":
+{
+	"frame": {"x":220,"y":525,"w":8,"h":20},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":6,"y":0,"w":8,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
+"change3.png":
+{
+	"frame": {"x":201,"y":525,"w":17,"h":20},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":0,"w":17,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
+"chess_cpu.png":
+{
+	"frame": {"x":160,"y":525,"w":20,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
+"chess_player.png":
+{
+	"frame": {"x":138,"y":525,"w":20,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
+"cpu_off.png":
+{
+	"frame": {"x":83,"y":505,"w":74,"h":18},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":74,"h":18},
+	"sourceSize": {"w":74,"h":18}
+},
+"cpu_on.png":
+{
+	"frame": {"x":159,"y":505,"w":74,"h":18},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":74,"h":18},
+	"sourceSize": {"w":74,"h":18}
+},
+"hand.png":
+{
+	"frame": {"x":81,"y":525,"w":20,"h":32},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":32},
+	"sourceSize": {"w":20,"h":33}
+},
+"player_off.png":
+{
+	"frame": {"x":83,"y":485,"w":75,"h":18},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":75,"h":18},
+	"sourceSize": {"w":75,"h":18}
+},
+"player_on.png":
+{
+	"frame": {"x":160,"y":485,"w":75,"h":18},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":75,"h":18},
+	"sourceSize": {"w":75,"h":18}
+},
+"startco.png":
+{
+	"frame": {"x":1,"y":243,"w":240,"h":240},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":240,"h":240},
+	"sourceSize": {"w":240,"h":240}
+},
+"turn_player.png":
+{
+	"frame": {"x":1,"y":537,"w":67,"h":12},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":5,"y":0,"w":67,"h":12},
+	"sourceSize": {"w":80,"h":12}
+},
+"yellow.png":
+{
+	"frame": {"x":115,"y":525,"w":21,"h":21},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":21,"h":21},
+	"sourceSize": {"w":21,"h":21}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "chess.png",
+	"format": "RGBA8888",
+	"size": {"w":242,"h":550},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:10d8f9c3001036fb7aa67734487b14fb:d2cd67a5a24cbd430420b98e4062a2bb:cc5d37dd548b50476bee27f9b6ec2a83$"
+}
+}
