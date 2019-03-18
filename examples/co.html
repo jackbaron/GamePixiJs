@@ -53,6 +53,7 @@
                     chessPieceCpu    = [],
                     yellowSuggest    = [],
                     listChessChange  = [],
+                    animateHunman    = [];
                     suggestNextDisplay = [];
 
                 document.body.appendChild(app.view);
@@ -64,10 +65,11 @@
                 let change1, change2, change3, groupContainer,
                 containerWidth,
                 centerScreen,
+                widthChess, heightChess,
                 centerScreenWidth,
                 centerScreenHeight,
                 checkSuggestNextDisplay,
-                backgroundStart, topImagePlayer, topImageCpu, turnPlayerText, chessCpuDisplay, chessCpuDisplay1, yellowDisplay, chessPlayerDisplay, chessPlayerDisplay1, handDisplay;
+                backgroundStart, topImagePlayer, topImagePlayerOff, topImageCpu, topImageCpuOff, turnPlayerText, chessCpuDisplay, chessCpuDisplay1, yellowDisplay, chessPlayerDisplay, chessPlayerDisplay1, handDisplay;
                 
                 
                 function setup() {
@@ -98,7 +100,9 @@
                     // set display start game 
                     backgroundStart = new Sprite(resources["images/chess.json"].textures["bgco.png"]),
                         topImagePlayer = new Sprite(resources["images/chess.json"].textures[imagePlayer]),
+                        topImagePlayerOff = new Sprite(resources["images/chess.json"].textures["player_off.png"]),
                         topImageCpu = new Sprite(resources["images/chess.json"].textures[imageCpu]),
+                        topImageCpuOff = new Sprite(resources["images/chess.json"].textures["cpu_off.png"])
                         turnPlayerText = new Sprite(resources["images/chess.json"].textures[turnPlayer]);
                         chessCpuDisplay = new Sprite(resources["images/chess.json"].textures[chessCpu]); // color chess cpu
                         chessCpuDisplay1 = new Sprite(resources["images/chess.json"].textures[chessCpu]); // color chess cpu
@@ -122,6 +126,9 @@
                     topImageCpu.position.set(120, 3);
                     turnPlayerText.position.set(3, 227);
                     
+                    //set width and height chess 
+                    widthChess = chessCpuDisplay.width;
+                    heightChess = chessCpuDisplay.height;
                     // hand = chess = 20, yellow = 21, app =240, container = 240 - container.x*2 = 184, mỗi ô vuông bằng = 184/8 = 23. yellow = 21 + (23-21)
                     // set width 
                     containerWidth = containerHeight = (yellowDisplay.width * 8 + 16);
@@ -156,15 +163,15 @@
                         mode = "easy";
                         backgroundStart.visible = topImagePlayer.visible = pointPlayer.visible = pointCpu.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible =  chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = true;
                         playerTurn= true;
+                        // remove screen intro game
+                        background.destroy();
+                        mode1.destroy();
+                        mode2.destroy();
                         suggestNextDisplay = suggestNext(chessPiecePlayer);
                         //remove empty array
                         checkSuggestNextDisplay = suggestNextDisplay.filter(function (el) {
                             return el != null;
                         });
-                        // remove screen intro game
-                        background.destroy();
-                        mode1.destroy();
-                        mode2.destroy();
                         displaySuggest(suggestNextDisplay);
                     });
 
@@ -201,40 +208,52 @@
                         chessPiecePlayer[chessPieceX + "-" + chessPieceY] = new Sprite(resources["images/chess.json"].textures[cheesePlayer]);
                         chessPiecePlayer[chessPieceX + "-" + chessPieceY].position.set(chessPieceX, chessPieceY);
                         groupContainer.addChild(chessPiecePlayer[chessPieceX + "-" + chessPieceY]);
-                        handDisplay.position.set(chessPieceX- 3, chessPieceY + (chessCpuDisplay.height)/2 -3);
-                        groupContainer.addChild(handDisplay);
+                        
                         // remove all suggest
-                        yellowSuggest.forEach(element => {
-                            element.destroy();
-                        });
+                        for (let elenmentSuggest in yellowSuggest) {
+                            yellowSuggest[elenmentSuggest].destroy();
+                        }
                         // remove sprite
                         listChessChange[direction].forEach( value => {
-                            let animateHunman = new PIXI.extras.AnimatedSprite(hunmanTextures);
-                            animateHunman.x = chessPieceCpu[value].x;
-                            animateHunman.y = chessPieceCpu[value].y;
-                            animateHunman.gotoAndPlay(0);
-                            animateHunman.animationSpeed = 0.05;
-                            animateHunman.loop = false;
-                            groupContainer.addChild(animateHunman);
+                            animateHunman[value] = new PIXI.extras.AnimatedSprite(hunmanTextures);
+                            animateHunman[value].x = chessPieceCpu[value].x;
+                            animateHunman[value].y = chessPieceCpu[value].y;
+                            animateHunman[value].gotoAndPlay(0);
+                            animateHunman[value].animationSpeed = 0.9;
+                            animateHunman[value].loop = false;
+                            groupContainer.addChild(animateHunman[value]);
 
-                            chessPiecePlayer[value] = chessPieceCpu[value];
-                            // remove sprite
+                            //create chess player
+                            chessPiecePlayer[value] = new Sprite(resources["images/chess.json"].textures[cheesePlayer]);
+                            chessPiecePlayer[value].position.set(chessPieceCpu[value].x, chessPieceCpu[value].y);
+
                             chessPieceCpu[value].destroy();
                             delete chessPieceCpu[value];
                         })
                         // change point
-                        pointPlayer.setText(parseInt(pointPlayerText) + listChessChange[direction].length + 1);
-                        pointCpu.setText(parseInt(pointCpuText) - listChessChange[direction].length);
+                        pointPlayerText = parseInt(pointPlayerText) + listChessChange[direction].length + 1;
+                        pointPlayer.setText(pointPlayerText);
+                        pointCpuText = parseInt(pointCpuText) - listChessChange[direction].length;
+                        pointCpu.setText(pointCpuText);
                         // turn off player turn on cpu
                         playerTurn = false;
                         cpuTurn = true;
-                        yellowSuggest = [];  
+                        yellowSuggest = []; 
+                        handDisplay.position.set(chessPieceX- 3, chessPieceY + heightChess/2 -3);
+                        groupContainer.addChild(handDisplay);
                         suggestNextDisplay = suggestNext(chessPieceCpu);
-                        setTimeout(function(){ displaySuggest(suggestNextDisplay);}, 3000);  
-                        // 
+                        // topImagePlayer.texture = topImagePlayerOff;
+                        // topImageCpu.texture = topImageCpuOff;
+                        setTimeout(function(){
+                            displaySuggest(suggestNextDisplay); 
+                            // enable cpu top screen
+                        }, hunmanTextures.length * 0.9);
                     } else {
-                        
-                        for (i = 0; i >= 3; i++) {
+                        // remove all suggest
+                        for (let elenmentSuggest in yellowSuggest) {
+                            yellowSuggest[elenmentSuggest].destroy();
+                        }
+                        for (i = 1; i <= 4; i++) {
                             var texture = PIXI.Texture.fromFrame('change' + i + '.png');
                             hunmanTextures.push(texture);
                         }
@@ -245,32 +264,37 @@
                         groupContainer.addChild(chessPieceCpu[chessPieceX + "-" + chessPieceY]);
                         // remove sprite
                         listChessChange[direction].forEach( value => {
+                            animateHunman[value] = new PIXI.extras.AnimatedSprite(hunmanTextures);
                             // remove sprite
-                            let animateHunman = new PIXI.extras.AnimatedSprite(hunmanTextures);
-                            animateHunman.x = chessPiecePlayer[value].x;
-                            animateHunman.y = chessPiecePlayer[value].y;
-                            animateHunman.gotoAndPlay(0);
-                            animateHunman.animationSpeed = 0.05;
-                            animateHunman.loop = false;
-                            groupContainer.addChild(animateHunman);
+                            animateHunman[value].x = chessPiecePlayer[value].x;
+                            animateHunman[value].y = chessPiecePlayer[value].y;
+                            animateHunman[value].gotoAndPlay(0);
+                            animateHunman[value].animationSpeed = 0.9;
+                            animateHunman[value].loop = false;
+                            groupContainer.addChild(animateHunman[value]);
 
-                            // add chess cpu
-                            chessPieceCpu[value] = chessPiecePlayer[value];
-                            //remove chess cpu;
+                            //create chess cpu
+                            chessPieceCpu[value] = new Sprite(resources["images/chess.json"].textures[chessCpu]);
+                            chessPieceCpu[value].position.set(chessPiecePlayer[value].x, chessPiecePlayer[value].y);
+                            //remove chess player;    
+                            chessPiecePlayer[value].destroy();
                             delete chessPiecePlayer[value];
                         });
-                        
                         // change point
-                        pointPlayer.setText(parseInt(pointPlayerText) - listChessChange[direction].length);
-                        pointCpu.setText(parseInt(pointCpuText) + listChessChange[direction].length + 1);
+                        pointPlayerText = parseInt(pointPlayerText) - listChessChange[direction].length;
+                        pointPlayer.setText(pointPlayerText);
+                        pointCpuText = parseInt(pointCpuText) + listChessChange[direction].length + 1;
+                        pointCpu.setText(pointCpuText);
                         // turn on player turn off cpu
                         playerTurn = true;
                         cpuTurn = true;
                         // remove all suggest
-                        yellowSuggest = [];
+                        yellowSuggest = []; 
                         //suggesst CPU
                         suggestNextDisplay = suggestNext(chessPiecePlayer);
-                        setTimeout(function(){ displaySuggest(suggestNextDisplay);}, 3000);  
+                        setTimeout(function(){
+                            displaySuggest(suggestNextDisplay); 
+                        }, hunmanTextures.length * 0.9);
                     }
                 } 
 
@@ -292,188 +316,475 @@
                         groupContainer.addChild(yellowSuggest[i]);
                         if (playerTurn) {
                             // display suggest
-                            groupContainer.addChild(yellowSuggest[i]);
                         } else {
                             myArray.push(i);
                         }
                     }
                     if (!playerTurn) {
                         // cpu random pointerdown
-                        let rand = myArray[Math.floor(Math.random() * myArray.length)];
-                        playChess(yellowSuggest[rand].x, yellowSuggest[rand].y, rand);
+                        // let rand = myArray[Math.floor(Math.random() * myArray.length)];
+                        // playChess(yellowSuggest[rand].x, yellowSuggest[rand].y, rand);
                     }
                 }
 
                 // check suggestNext    
                 function suggestNext(listChess) {
+                    if (playerTurn) {
+                        console.log("Player");
+                        console.log(chessPiecePlayer);
+                        console.log(chessPieceCpu);
+                    } else {
+                        console.log("CPU");
+                        console.log(chessPieceCpu);
+                        console.log(chessPiecePlayer);
+                    }
+                    listChessChange = []
                     let coordinatesSuggest = [];
                     for (let element in listChess) {
                         // console.log(listChess[element]);
                         // check left 
                         // check 8 directions for 1 chess piece
                         for ( let i = 0; i <= 7 ; i++) {
-                            coordinatesSuggest = checkMove(listChess[element].x, listChess[element].y, i, coordinatesSuggest);
+                            coordinatesSuggest = checkMove(listChess[element].x, listChess[element].y, i, coordinatesSuggest, listChess[element].x, listChess[element].y);
                         }
                     }
                     // return coordinates suggest
                     return coordinatesSuggest;
                 }
-                
-                // chessPieceX coordinates x
-                // chessPieceY coordinates y
-                function checkMove(chessPieceX, chessPieceY, directions, spriteSuggest) {
+                /**
+                 * chessPieceX tọa độ x
+                 * chessPieceY tọa độ y
+                 * directions tọa độ từ 0 -> 7. Mỗi cờ sẽ đánh được 8 hướng
+                 * spriteSuggest mảng gợi ý nước đánh
+                 * coordinatesXRoot tọa độ x cờ bắt đầu check gợi ý
+                 * coordinatesYRoot tọa độ y cờ bắt đầu check gợi ý
+                 * nextX tọa độ tiếp theo sau khi check để kiểm tra xem cờ tiếp theo có phải là của người chơi hoặc cpu xét sự bao bọc cờ còn lại giữa 2 quân cờ
+                 * nextY --..
+                 */
+                function checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot) {
                     let move = (yellowDisplay.width + 2);
-                    let moveLeft, next, moveRight, moveTop, moveBottom, listArr;
+                    let moveLeft, next, moveRight, moveTop, moveBottom, listArr, nextX, nextY;
+                    let tmp = directions + "-" + coordinatesXRoot + "-" + coordinatesYRoot;
                     // check left
                     if (directions === 0) {
                         moveLeft = chessPieceX - move;
+                        nextX = moveLeft - move;
                         // check limit on the left
-                        if (moveLeft < yellowDisplay.width + 3) {
-                            return; //limit left
+                        if (moveLeft < move) {
+                            return spriteSuggest; //limit left
                         }
                         // check exitst chesse piece cpu or chess piece player
                         if (playerTurn) {
-                            if (chessPieceCpu.hasOwnProperty(moveLeft + "-" + chessPieceY)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(nextX + "-" + chessPieceY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next player;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(moveLeft + "-" + chessPieceY) && (nextX >= move)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([moveLeft + "-" + chessPieceY]);
+                                    listChessChange[tmp] = listArr.concat([moveLeft + "-" + chessPieceY]);
                                 } else {
-                                    listChessChange[directions] = [moveLeft + "-" + chessPieceY];
+                                    listChessChange[tmp] = [moveLeft + "-" + chessPieceY];
                                 }
                                 // exitst
                                 chessPieceX = moveLeft;
-                                spriteSuggest[directions] = {"x" : chessPieceX - move, "y" : chessPieceY};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         } else {
-                            if (chessPiecePlayer.hasOwnProperty(moveLeft + "-" + chessPieceY)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(nextX + "-" + chessPieceY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next player;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(moveLeft + "-" + chessPieceY) && (nextX >= move)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([moveLeft + "-" + chessPieceY]);
+                                    listChessChange[tmp] = listArr.concat([moveLeft + "-" + chessPieceY]);
                                 } else {
-                                    listChessChange[directions] = [moveLeft + "-" + chessPieceY];
+                                    listChessChange[tmp] = [moveLeft + "-" + chessPieceY];
                                 }
                                 // exitst
                                 chessPieceX = moveLeft;
-                                spriteSuggest[directions] = {"x" : chessPieceX - move, "y" : chessPieceY};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         }
                         
                     } else if (directions === 4) {
                         // check right
                         moveRight = chessPieceX + move;
+                        nextX = moveRight + move;
                         // check limit on the right
-                        if (moveRight > containerWidth) {
-                            return; //limit right
+                        if (moveRight >= containerWidth) {
+                            return spriteSuggest; //limit right
                         }
 
                         if (playerTurn) {
-                            if (chessPieceCpu.hasOwnProperty(moveRight + "-" + chessPieceY)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(nextX + "-" + chessPieceY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next player;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(moveRight + "-" + chessPieceY) && (nextX < containerWidth)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([moveRight + "-" + chessPieceY]);
+                                    listChessChange[tmp] = listArr.concat([moveRight + "-" + chessPieceY]);
                                 } else {
-                                    listChessChange[directions] = [moveRight + "-" + chessPieceY];
+                                    listChessChange[tmp] = [moveRight + "-" + chessPieceY];
                                 }
                                 // exitst
                                 chessPieceX = moveRight;
-                                spriteSuggest[directions] = {"x" : chessPieceX  + move, "y" : chessPieceY};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         } else {
-                            if (chessPiecePlayer.hasOwnProperty(moveRight + "-" + chessPieceY)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(nextX + "-" + chessPieceY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(moveRight + "-" + chessPieceY) && (nextX < containerWidth)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([moveRight + "-" + chessPieceY]);
+                                    listChessChange[tmp] = listArr.concat([moveRight + "-" + chessPieceY]);
                                 } else {
-                                    listChessChange[directions] = [moveRight + "-" + chessPieceY];
+                                    listChessChange[tmp] = [moveRight + "-" + chessPieceY];
                                 }
                                 // exitst
                                 chessPieceX = moveRight;
-                                spriteSuggest[directions] = {"x" : chessPieceX  + move, "y" : chessPieceY};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : chessPieceY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         }
                         
                     } else if (directions === 2) {
                         // check top
                         moveTop = chessPieceY - move;
+                        nextY = moveTop - move;
                         // check limit on the top
-                        if (moveTop < yellowDisplay.width + 3) {
-                            return; //limit top
+                        if (moveTop < move) {
+                            return spriteSuggest; //limit top
                         }
                         if (playerTurn) {
-                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + moveTop)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + moveTop) && (nextY >= move)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveTop]);
+                                    listChessChange[tmp] = listArr.concat([chessPieceX + "-" + moveTop]);
                                 } else {
-                                    listChessChange[directions] = [chessPieceX + "-" + moveTop];
+                                    listChessChange[tmp] = [chessPieceX + "-" + moveTop];
                                 }
                                 // exitst
                                 chessPieceY = moveTop;
-                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY - move};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : chessPieceX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         } else {
-                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + moveTop)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + moveTop) && (nextY >= move)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveTop]);
+                                    listChessChange[tmp] = listArr.concat([chessPieceX + "-" + moveTop]);
                                 } else {
-                                    listChessChange[directions] = [chessPieceX + "-" + moveTop];
+                                    listChessChange[tmp] = [chessPieceX + "-" + moveTop];
                                 }
                                 // exitst
                                 chessPieceY = moveTop;
-                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY - move};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : chessPieceX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }    
                         }
                         
                     } else if (directions === 6) {
                         // check bottom
                         moveBottom = chessPieceY + move;
+                        nextY = moveBottom + move;
                         // check limit on the bottom
-                        if (moveRight > containerHeight) {
-                            return; //limit bottom
+                        if (moveBottom >= containerHeight) {
+                            return spriteSuggest; //limit bottom
                         }
                         if (playerTurn) {
-                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + moveBottom)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + moveBottom) && (nextY < containerHeight)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveBottom]);
+                                    listChessChange[tmp] = listArr.concat([chessPieceX + "-" + moveBottom]);
                                 } else {
-                                    listChessChange[directions] = [chessPieceX + "-" + moveBottom];
+                                    listChessChange[tmp] = [chessPieceX + "-" + moveBottom];
                                 }
                                 // exitst
                                 chessPieceY = moveBottom;
-                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY + move};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : chessPieceX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         } else {
-                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + moveBottom)) {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(chessPieceX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(chessPieceX + "-" + moveBottom) && (nextY < containerHeight)) {
                                 //add list chess click change
-                                listArr = listChessChange[directions];
+                                listArr = listChessChange[tmp];
                                 if (listArr !== undefined) {
-                                    listChessChange[directions] = listArr.concat([chessPieceX + "-" + moveBottom]);
+                                    listChessChange[tmp] = listArr.concat([chessPieceX + "-" + moveBottom]);
                                 } else {
-                                    listChessChange[directions] = [chessPieceX + "-" + moveBottom];
+                                    listChessChange[tmp] = [chessPieceX + "-" + moveBottom];
                                 }
                                 // exitst
                                 chessPieceY = moveBottom;
-                                spriteSuggest[directions] = {"x" : chessPieceX, "y" : chessPieceY + move};
-                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest);
+                                spriteSuggest[tmp] = {"x" : chessPieceX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
                             }
                         }
                         
+                    } else if (directions === 1) {
+                        moveLeft = chessPieceX - move;
+                        moveTop = chessPieceY - move;
+
+                        nextX = moveLeft - move;
+                        nextY = moveTop - move;
+                        // check limit on the left
+                        if (moveLeft < move || moveTop < move) {
+                            return spriteSuggest; //limit left
+                        }
+                        // check exitst chesse piece cpu or chess piece player
+                        if (playerTurn) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(moveLeft + "-" + moveTop) && (nextX >= move) && (nextY >= move)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveLeft + "-" + moveTop]);
+                                } else {
+                                    listChessChange[tmp] = [moveLeft + "-" + moveTop];
+                                }
+                                // exitst
+                                chessPieceX = moveLeft;
+                                chessPieceY = moveTop;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        } else {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(moveLeft + "-" + moveTop) && (nextX >= move) && (nextY >= move)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveLeft + "-" + moveTop]);
+                                } else {
+                                    listChessChange[tmp] = [moveLeft + "-" + moveTop];
+                                }
+                                // exitst
+                                chessPieceX = moveLeft;
+                                chessPieceY = moveTop;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        }
+                    } else if (directions === 3) {
+                        moveRight = chessPieceX + move;
+                        moveTop = chessPieceY - move;
+
+                        nextX = moveRight + move;
+                        nextY = moveTop - move;
+                        // check limit on the right
+                        if (moveRight >= containerWidth || moveTop < move) {
+                            return spriteSuggest; //limit right
+                        }
+                        // check exitst chesse piece cpu or chess piece player
+                        if (playerTurn) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(moveRight + "-" + moveTop) && (nextX < containerWidth) && (nextY >= move)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveRight + "-" + moveTop]);
+                                } else {
+                                    listChessChange[tmp] = [moveRight + "-" + moveTop];
+                                }
+                                // exitst
+                                chessPieceX = moveRight;
+                                chessPieceY = moveTop;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        } else {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(moveRight + "-" + moveTop) && (nextX < containerWidth) && (nextY >= move)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveRight + "-" + moveTop]);
+                                } else {
+                                    listChessChange[tmp] = [moveRight + "-" + moveTop];
+                                }
+                                // exitst
+                                chessPieceX = moveRight;
+                                chessPieceY = moveTop;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        }
+                    } else if (directions === 5) {
+                        moveRight = chessPieceX + move;
+                        moveBottom = chessPieceY + move;
+
+                        nextX = moveRight + move;
+                        nextY = moveBottom + move;
+                        // check limit on the right
+                        if (moveRight >= containerWidth || moveBottom >= containerHeight) {
+                            return spriteSuggest; //limit right
+                        }
+                        // check exitst chesse piece cpu or chess piece player
+                        if (playerTurn) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next player;
+                            }
+
+                            if (chessPieceCpu.hasOwnProperty(moveRight + "-" + moveBottom) && (nextX < containerWidth) && (nextY < containerHeight)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveRight + "-" + moveBottom]);
+                                } else {
+                                    listChessChange[tmp] = [moveRight + "-" + moveBottom];
+                                }
+                                // exitst
+                                chessPieceX = moveRight;
+                                chessPieceY = moveBottom;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        } else {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next player;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(moveRight + "-" + moveBottom) && (nextX < containerWidth) && (nextY < containerHeight)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveRight + "-" + moveBottom]);
+                                } else {
+                                    listChessChange[tmp] = [moveRight + "-" + moveBottom];
+                                }
+                                // exitst
+                                chessPieceX = moveRight;
+                                chessPieceY = moveBottom;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        }
+                    } else {
+                        // directions = 7
+                        moveLeft = chessPieceX - move;
+                        moveBottom = chessPieceY + move;
+
+                        nextX = moveLeft - move;
+                        nextY = moveBottom + move;
+                        // check limit on the right
+                        if (moveLeft < move || moveBottom >= containerHeight) {
+                            return spriteSuggest; //limit right
+                        }
+                        // check exitst chesse piece cpu or chess piece player
+                        if (playerTurn) {
+                            // Kiểm tra xem quân tiếp theo có phải là của player không. Nếu phải thì cờ cpu đang được bao bọc trong player delete mảng and return
+                            if (chessPiecePlayer.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next player;
+                            }
+                            if (chessPieceCpu.hasOwnProperty(moveLeft + "-" + moveBottom) && (nextX >= move) && (nextY < containerHeight)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveLeft + "-" + moveBottom]);
+                                } else {
+                                    listChessChange[tmp] = [moveLeft + "-" + moveBottom];
+                                }
+                                // exitst
+                                chessPieceX = moveLeft;
+                                chessPieceY = moveBottom;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        } else {
+                            // Kiểm tra xem quân tiếp theo có phải là của cpu không. Nếu phải thì cờ player đang được bao bọc trong cpu delete mảng and return
+                            if (chessPieceCpu.hasOwnProperty(nextX + "-" + nextY)) {
+                                delete listChessChange[tmp];
+                                delete spriteSuggest[tmp];
+                                return spriteSuggest; //chess next cpu;
+                            }
+                            if (chessPiecePlayer.hasOwnProperty(moveLeft + "-" + moveBottom) && (nextX >= move) && (nextY < containerHeight)) {
+                                //add list chess click change
+                                listArr = listChessChange[tmp];
+                                if (listArr !== undefined) {
+                                    listChessChange[tmp] = listArr.concat([moveLeft + "-" + moveBottom]);
+                                } else {
+                                    listChessChange[tmp] = [moveLeft + "-" + moveBottom];
+                                }
+                                // exitst
+                                chessPieceX = moveLeft;
+                                chessPieceY = moveBottom;
+                                spriteSuggest[tmp] = {"x" : nextX, "y" : nextY};
+                                checkMove(chessPieceX, chessPieceY, directions, spriteSuggest, coordinatesXRoot, coordinatesYRoot);
+                            }
+                        }
                     }
 
                     return spriteSuggest;

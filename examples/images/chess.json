@@ -56,6 +56,14 @@
 	"spriteSourceSize": {"x":2,"y":0,"w":17,"h":20},
 	"sourceSize": {"w":20,"h":20}
 },
+"change4.png":
+{
+	"frame": {"x":160,"y":525,"w":20,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+	"sourceSize": {"w":20,"h":20}
+},
 "chess_cpu.png":
 {
 	"frame": {"x":160,"y":525,"w":20,"h":20},
@@ -143,6 +151,6 @@
 	"format": "RGBA8888",
 	"size": {"w":242,"h":550},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:10d8f9c3001036fb7aa67734487b14fb:d2cd67a5a24cbd430420b98e4062a2bb:cc5d37dd548b50476bee27f9b6ec2a83$"
+	"smartupdate": "$TexturePacker:SmartUpdate:ca09318cfa2c2a45be2d4c8823ecc782:3811c9244c0d30d1545c16c145cc439b:cc5d37dd548b50476bee27f9b6ec2a83$"
 }
 }
