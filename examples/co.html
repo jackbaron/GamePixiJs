@@ -26,7 +26,7 @@
                     resolution: 1
                 });
                 
-                let playerTurn = cpuTurn = playerBreak = cpuBreak = false;
+                let playerTurn = cpuTurn = false;
 
                 let imagePlayer = "player_on.png",
                     imageCpu    = "cpu_off.png",
@@ -59,7 +59,14 @@
                 document.body.appendChild(app.view);
 
                 loader
-                    .add("images/chess.json")
+                    .add([
+                        "images/chess.json",
+                        "images/co/mes_lose.png",
+                        "images/co/lose.png",
+                        "images/co/pass.png",
+                        "images/co/win.png",
+                        "images/co/restart.png"
+                    ])
                     .load(setup);
 
                 let change1, change2, change3, groupContainer,
@@ -110,15 +117,17 @@
                         chessCpuDisplay1 = new Sprite(resources["images/chess.json"].textures[chessCpu]); // color chess cpu
                         yellowDisplay = new Sprite(resources["images/chess.json"].textures[yellow]); // Suggest the next country
                         chessPlayerDisplay = new Sprite(resources["images/chess.json"].textures[cheesePlayer]), // color chess player
-                        chessPlayerDisplay1 = new Sprite(resources["images/chess.json"].textures[cheesePlayer])// color chess player
-                        handDisplay = new Sprite(resources["images/chess.json"].textures[handImage]);
+                        chessPlayerDisplay1 = new Sprite(resources["images/chess.json"].textures[cheesePlayer]),// color chess player
+                        handDisplay = new Sprite(resources["images/chess.json"].textures[handImage]),
+                        passImage = new Sprite(resources["images/co/pass.png"].texture);
                         groupContainer.addChild(
                             chessCpuDisplay,
                             chessPlayerDisplay,
                             yellowDisplay,
                             chessCpuDisplay1,
                             chessPlayerDisplay1,
-                            handDisplay
+                            handDisplay,
+                            passImage,
                         )
                     app.stage.addChild(backgroundStart, groupContainer, topImagePlayer, topImageCpu, turnPlayerText);
                     backgroundStart.visible = pointPlayer.visible = pointCpu.visible = topImagePlayer.visible = topImageCpu.visible = turnPlayerText.visible = chessCpuDisplay.visible = chessPlayerDisplay.visible = yellowDisplay.visible = chessCpuDisplay1.visible = chessPlayerDisplay1.visible = handDisplay.visible = false ;
@@ -127,6 +136,7 @@
                     topImagePlayer.position.set(10, 3);
                     topImageCpu.position.set(120, 3);
                     turnPlayerText.position.set(3, 227);
+                    
                     
                     //set width and height chess 
                     widthChess = chessCpuDisplay.width;
@@ -137,6 +147,9 @@
                     centerScreenWidth = containerWidth / 2 - chessCpuDisplay.width - 3; // chess = 20 => chess = 20 +3
                     centerScreenHeight = containerHeight / 2 - chessCpuDisplay.width - 3;
                     // console.log(chessCpuDisplay.texture.textureCacheIds[0]); get name image
+                    passImage.position.set((containerWidth - passImage.width) / 2, centerScreenHeight);
+                    passImage.zOrder = 10;
+                    passImage.visible = false;
                     //set chess cpu and player
                     chessCpuDisplay.position.set(centerScreenWidth , centerScreenHeight);
                     chessCpuDisplay1.position.set(centerScreenWidth  + yellowDisplay.width + 2, centerScreenHeight + yellowDisplay.height + 2);
@@ -193,7 +206,6 @@
                         displaySuggest(suggestNextDisplay);
                     });  
                 }
-
                 // click suggest 
                 // chessPieceX coordinates x
                 // chessPieceY coordinates y
@@ -220,19 +232,24 @@
                             //create chess player
                             chessPiecePlayer[value] = new Sprite(resources["images/chess.json"].textures[cheesePlayer]);
                             chessPiecePlayer[value].position.set(chessPieceCpu[value].x, chessPieceCpu[value].y);
-
+                            
                             chessPieceCpu[value].destroy();
                             delete chessPieceCpu[value];
-                            
+
                             animateHunman[value] = new PIXI.extras.AnimatedSprite(hunmanTextures);
                             animateHunman[value].x = chessPiecePlayer[value].x;
                             animateHunman[value].y = chessPiecePlayer[value].y;
                             animateHunman[value].gotoAndPlay(0);
                             animateHunman[value].animationSpeed = 0.09;
                             animateHunman[value].loop = false;
+                            animateHunman[value].onComplete = function() {
+                                animateHunman[value].destroy();
+                                chessPiecePlayer[value].zOrder = 1;
+                                groupContainer.addChild(chessPiecePlayer[value], handDisplay);
+                            }
                             groupContainer.addChild(animateHunman[value]);
                             
-                        })
+                        });
                         // change point
                         pointPlayerText = parseInt(pointPlayerText) + listChessChange[direction].length + 1;
                         pointPlayer.setText(pointPlayerText);
@@ -245,7 +262,6 @@
                         handDisplay.position.set(chessPieceX- 3, chessPieceY + heightChess/2 -3);
                         groupContainer.addChild(handDisplay);
                         suggestNextDisplay = suggestNext(chessPieceCpu);
-                        
                         // check cpu isset next suggest
                         if (Object.keys(suggestNextDisplay).length > 0) {
                             setTimeout(function(){
@@ -254,17 +270,23 @@
                                 displaySuggest(suggestNextDisplay); 
                             }, 2000);
                         } else {
+                            playerTurn = true;
+                            cpuTurn = false;
+                            passImage.visible = true;
                             suggestNextDisplay = suggestNext(chessPiecePlayer);
                             if (Object.keys(suggestNextDisplay).length > 0) {
-                                
+                                passImage.visible = false;
+                                groupContainer.on('sort', function(sprite) { sprite.zOrder = -sprite.y });
                                 setTimeout(function(){
                                     topImagePlayer.setTexture(PIXI.TextureCache['player_on.png']);
                                     topImageCpu.setTexture(PIXI.TextureCache['cpu_off.png']);
                                     displaySuggest(suggestNextDisplay); 
                                 }, 2000);
                             } else {
-                                alert('x');
-                                // end game
+                                passImage.visible = false;
+                                setTimeout(function(){
+                                    finishGame();
+                                }, 1000);
                             }
                         }
                         
@@ -288,6 +310,7 @@
                             //create chess cpu
                             chessPieceCpu[value] = new Sprite(resources["images/chess.json"].textures[chessCpu]);
                             chessPieceCpu[value].position.set(chessPiecePlayer[value].x, chessPiecePlayer[value].y);
+                            chessPieceCpu[value].zOrder = 1;
                             //remove chess player;    
                             chessPiecePlayer[value].destroy();
                             delete chessPiecePlayer[value];
@@ -299,6 +322,10 @@
                             animateHunman[value].gotoAndPlay(0);
                             animateHunman[value].animationSpeed = 0.09;
                             animateHunman[value].loop = false;
+                            animateHunman[value].onComplete = function() {
+                                animateHunman[value].destroy();
+                                groupContainer.addChild(chessPieceCpu[value], handDisplay);
+                            }
                             groupContainer.addChild(animateHunman[value]);
                         });
                         // change point
@@ -306,34 +333,43 @@
                         pointPlayer.setText(pointPlayerText);
                         pointCpuText = parseInt(pointCpuText) + listChessChange[direction].length + 1;
                         pointCpu.setText(pointCpuText);
-                        // turn on player turn off cpu
-                        playerTurn = true;
-                        cpuTurn = true;
                         
                         // remove all suggest
                         yellowSuggest = []; 
                         handDisplay.position.set(chessPieceX- 3, chessPieceY + heightChess/2 -3);
-                        handDisplay.zIndex = 999;
                         groupContainer.addChild(handDisplay);
                         //suggesst CPU
+                        playerTurn = true;
+                        cpuTurn = false;
                         suggestNextDisplay = suggestNext(chessPiecePlayer);
                         if (Object.keys(suggestNextDisplay).length > 0) {
+                            // turn on player turn off cpu
                             setTimeout(function(){
                                 topImagePlayer.setTexture(PIXI.TextureCache['player_on.png']);
                                 topImageCpu.setTexture(PIXI.TextureCache['cpu_off.png']);
                                 displaySuggest(suggestNextDisplay); 
                             }, 2000);
                         } else {
+                            playerTurn = false;
+                            cpuTurn = true;
+                            passImage.visible = false;
+                            groupContainer.on('sort', function(sprite) { sprite.zOrder = -sprite.y });
                             suggestNextDisplay = suggestNext(chessPieceCpu);
                             if (Object.keys(suggestNextDisplay).length > 0) {
+                                passImage.visible = false;
                                 setTimeout(function(){
                                     topImagePlayer.setTexture(PIXI.TextureCache['player_off.png']);
                                     topImageCpu.setTexture(PIXI.TextureCache['cpu_on.png']);
                                     displaySuggest(suggestNextDisplay); 
                                 }, 2000);
                             } else {
+                                passImage.visible = false;
                                 //end game
-                                alert('x');
+                                //spirte end game
+                                setTimeout(function(){
+                                    finishGame();
+                                }, 1000);
+                                
                             }
                             
                         }
@@ -341,7 +377,43 @@
                     }
                 } 
 
+                function finishGame() {
+                    restartImage = new Sprite(resources["images/co/restart.png"].texture);
+                    restartImage.position.set((containerWidth - restartImage.width) /2, (containerHeight - restartImage.height)/ 2);
+                    //spirte end game
+                    if (pointPlayerText > pointCpuText) {
+                        messLose = new Sprite(resources["images/co/mes_lose.png"].texture);
+                        messLose.position.set((containerWidth - messLose.width) / 2, 5);
+                        //player win
+                        winImage = new Sprite(resources["images/co/win.png"].texture);
+                        winImage.position.set((containerWidth - winImage.width) / 2, centerScreenHeight);
+                        groupContainer.addChild(
+                            winImage,
+                            messLose
+                        );
 
+                        setTimeout(() => {
+                            winImage.destroy();
+                            messLose.destroy();
+                            groupContainer.addChild(restartImage);
+                        }, 1000);
+                    } else {
+                        // cpu win
+                        
+                        loseImage = new Sprite(resources["images/co/lose.png"].texture);
+                        // set position end game
+                        loseImage.position.set((containerWidth - loseImage.width) / 2, centerScreenHeight);
+                        groupContainer.addChild(
+                            messLose,
+                            loseImage
+                        );
+                        setTimeout(() => {
+                            winImage.destroy();
+                            messLose.destroy();
+                            groupContainer.addChild(restartImage);
+                        }, 1000);
+                    }
+                }
                 //     
                 // display directions suggest
                 function displaySuggest(coordinates) {
@@ -362,6 +434,7 @@
                             }
                             yellowSuggest[i] = new Sprite(resources["images/chess.json"].textures[yellow]);
                             yellowSuggest[i].position.set(element.x, element.y);
+                            yellowSuggest[i].zOrder = 1;
                             // set click choose mode
                             yellowSuggest[i].interactive = true;
                             // Shows hand cursor
@@ -371,7 +444,7 @@
                             });
                             // check display suggest next
                             if (playerTurn) {
-                                groupContainer.addChild(yellowSuggest[i]);
+                                groupContainer.addChild(yellowSuggest[i], handDisplay);
                                 // display suggest
                             } else {
                                 myArray.push(i);
