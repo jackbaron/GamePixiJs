@@ -74,7 +74,8 @@
                         "images/co/lose.png",
                         "images/co/pass.png",
                         "images/co/win.png",
-                        "images/co/restart.png"
+                        "images/co/restart.png",
+                        "images/co/draw.png"
                     ])
                     .load(setup);
 
@@ -389,14 +390,24 @@
                 } 
 
                 function finishGame() {
-                    let restartFlag = false;
                     restartImage = new Sprite(resources["images/co/restart.png"].texture);
                     restartImage.position.set((containerWidth - restartImage.width) /2, (containerHeight - restartImage.height)/ 2);
                     messLose = new Sprite(resources["images/co/mes_lose.png"].texture);
                     messLose.position.set((containerWidth - messLose.width) / 2, 5);
                     //spirte end game
-                    if (pointPlayerText > pointCpuText) {
-                        
+                    if (pointPlayerText == pointCpuText) {
+                        drawImage = new Sprite(resources["images/co/draw.png"].texture);
+                        drawImage.position.set((containerWidth - drawImage.width) / 2, centerScreenHeight);
+                        groupContainer.addChild(
+                            drawImage,
+                            messLose
+                        );
+                        setTimeout(() => {
+                            drawImage.destroy();
+                            messLose.destroy();
+                            groupContainer.addChild(restartImage);
+                        }, 1300);
+                    } else if (pointPlayerText > pointCpuText) {
                         //player win
                         winImage = new Sprite(resources["images/co/win.png"].texture);
                         winImage.position.set((containerWidth - winImage.width) / 2, centerScreenHeight);
@@ -408,7 +419,6 @@
                         setTimeout(() => {
                             winImage.destroy();
                             messLose.destroy();
-                            restartFlag = true;
                             groupContainer.addChild(restartImage);
                         }, 1300);
                     } else {
@@ -423,7 +433,6 @@
                         setTimeout(() => {
                             loseImage.destroy();
                             messLose.destroy();
-                            restartFlag = true;
                             groupContainer.addChild(restartImage);
                         }, 1300);
 
