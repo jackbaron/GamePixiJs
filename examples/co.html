@@ -286,10 +286,9 @@
                             groupContainer.addChild(passImage);
                             suggestNextDisplay = suggestNext(chessPiecePlayer);
                             if (Object.keys(suggestNextDisplay).length > 0) {
-                                passImage.visible = false;
                                 // groupContainer.on('sort', function(sprite) { sprite.zOrder = -sprite.y });
                                 setTimeout(function(){
-                                    
+                                    passImage.visible = false;
                                     topImagePlayer.setTexture(PIXI.TextureCache['player_on.png']);
                                     topImageCpu.setTexture(PIXI.TextureCache['cpu_off.png']);
                                     displaySuggest(suggestNextDisplay); 
@@ -368,8 +367,8 @@
                             groupContainer.addChild(passImage);
                             suggestNextDisplay = suggestNext(chessPieceCpu);
                             if (Object.keys(suggestNextDisplay).length > 0) {
-                                passImage.visible = false;
                                 setTimeout(function(){
+                                    passImage.visible = false;
                                     topImagePlayer.setTexture(PIXI.TextureCache['player_off.png']);
                                     topImageCpu.setTexture(PIXI.TextureCache['cpu_on.png']);
                                     displaySuggest(suggestNextDisplay); 
