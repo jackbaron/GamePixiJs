@@ -272,14 +272,16 @@
                         yellowSuggest = []; 
                         handDisplay.position.set(chessPieceX- 3, chessPieceY + heightChess/2 -3);
                         groupContainer.addChild(handDisplay);
+                        let timeOut = listChessChange[direction].length * 0.09 * 4 + 1400;
                         suggestNextDisplay = suggestNext(chessPieceCpu);
+                        
                         // check cpu isset next suggest
                         if (Object.keys(suggestNextDisplay).length > 0) {
                             setTimeout(function(){
                                 topImagePlayer.setTexture(PIXI.TextureCache['player_off.png']);
                                 topImageCpu.setTexture(PIXI.TextureCache['cpu_on.png']);
                                 displaySuggest(suggestNextDisplay); 
-                            }, 2200);
+                            }, timeOut);
                         } else {
                             playerTurn = true;
                             cpuTurn = false;
@@ -293,7 +295,7 @@
                                     topImagePlayer.setTexture(PIXI.TextureCache['player_on.png']);
                                     topImageCpu.setTexture(PIXI.TextureCache['cpu_off.png']);
                                     displaySuggest(suggestNextDisplay); 
-                                }, 2200);
+                                }, timeOut);
                             } else {
                                 setTimeout(function(){
                                     passImage.visible = false;
@@ -353,6 +355,7 @@
                         //suggesst CPU
                         playerTurn = true;
                         cpuTurn = false;
+                        let timeOut = listChessChange[direction].length * 0.09 * 4 + 1400;
                         suggestNextDisplay = suggestNext(chessPiecePlayer);
                         if (Object.keys(suggestNextDisplay).length > 0) {
                             // turn on player turn off cpu
@@ -360,7 +363,7 @@
                                 topImagePlayer.setTexture(PIXI.TextureCache['player_on.png']);
                                 topImageCpu.setTexture(PIXI.TextureCache['cpu_off.png']);
                                 displaySuggest(suggestNextDisplay); 
-                            }, 2200);
+                            }, timeOut);
                         } else {
                             playerTurn = false;
                             cpuTurn = true;
@@ -373,7 +376,7 @@
                                     topImagePlayer.setTexture(PIXI.TextureCache['player_off.png']);
                                     topImageCpu.setTexture(PIXI.TextureCache['cpu_on.png']);
                                     displaySuggest(suggestNextDisplay); 
-                                }, 2200);
+                                }, timeOut);
                             } else {
                                 //end game
                                 //spirte end game
