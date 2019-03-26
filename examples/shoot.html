@@ -1,0 +1,358 @@
+<html>
+    <head>
+        <title>Shooting</title>
+    </head>
+    <body>
+        <script src="../pixi/pixi.min.js"></script>
+        <script src="../pixi/bump.js"></script>
+        <script>
+            var renderer = PIXI.autoDetectRenderer(800, 600,{backgroundColor : 0x1099bb});  
+            document.body.appendChild(renderer.view);
+
+            // create the root of the scene graph
+            var stage = new PIXI.Container();
+
+            // create a texture from an image path
+            var texture = PIXI.Texture.fromImage('images/shoot/bunny.png');  
+            var carrotTex = PIXI.Texture.fromImage('images/shoot/carrot.png');
+
+            var blueBall = PIXI.Texture.fromImage('images/shoot/blue.png');
+            var redBall = PIXI.Texture.fromImage('images/shoot/red.png');
+            var greenBall = PIXI.Texture.fromImage('images/shoot/green.png');
+
+            // create a new Sprite using the texture
+            var bunny = new PIXI.Sprite(texture);
+            var blue = new PIXI.Sprite(blueBall);
+            var green = new PIXI.Sprite(greenBall);
+            var red = new PIXI.Sprite(redBall);
+            var b = new Bump(PIXI);
+            
+            let style = new PIXI.TextStyle({
+                fontFamily: "Futura",
+                fontSize: 30,
+                fill: "white"
+            });
+            let message = new PIXI.Text("You lose", style);
+            message.x = 120;
+            message.y = 600 / 2 - 32;
+
+
+            let numberOfBlobs = 6,
+                    point = 0;
+                    spacing = 48,
+                    xOffset = 600,
+                    speed = 2,
+                    direction = 1;
+
+            //An array to store all the blob monsters
+            blobs = [];
+
+            let pointText = new PIXI.Text(point, style);   
+
+            pointText.position.set(10 ,10); 
+
+            healthBar = new PIXI.Container();
+            healthBar.position.set(650, 4);
+
+            //Create the black background rectangle
+            let innerBar = new PIXI.Graphics();
+            innerBar.beginFill(0x000000);
+            innerBar.drawRect(0, 0, 128, 8);
+            innerBar.endFill();
+            healthBar.addChild(innerBar);
+
+            //Create the front red rectangle
+            let outerBar = new PIXI.Graphics();
+            outerBar.beginFill(0xFF3300);
+            outerBar.drawRect(0, 0, 128, 8);
+            outerBar.endFill();
+            healthBar.addChild(outerBar);
+
+            healthBar.outer = outerBar;
+
+            // center the sprite's anchor point
+            bunny.anchor.x = 0.5;  
+            bunny.anchor.y = 0.5;
+
+            // move the sprite to the center of the screen
+            bunny.position.x = 6;  
+            bunny.position.y = 300;
+
+            var background = new PIXI.Graphics();  
+            background.beginFill(0x123456);  
+            background.drawRect(0,0,800,600);  
+            background.endFill();  
+            stage.addChild(background, pointText);
+
+            //Make as many blobs as there are `numberOfBlobs`
+            for (let i = 0; i < numberOfBlobs; i++) {
+                let blobTexture;
+                //Make a blob
+                if (i%2 == 0) {
+                    blobTexture = PIXI.Texture.fromImage('images/shoot/red.png');
+                } else {
+                    blobTexture = PIXI.Texture.fromImage('images/shoot/blue.png');
+                }
+                let blob = new PIXI.Sprite(blobTexture);
+
+                blob.scale.x *= 0.1;
+                blob.scale.y *= 0.1;
+
+                //Space each blob horizontally according to the `spacing` value.
+                //`xOffset` determines the point from the left of the screen
+                //at which the first blob should be added
+                let x = 800;
+
+                //Give the blob a random y position
+                let y = randomInt(0, xOffset);
+
+                //Set the blob's position
+                blob.x = x;
+                blob.y = y;
+
+                //Set the blob's vertical velocity. `direction` will be either `1` or
+                //`-1`. `1` means the enemy will move down and `-1` means the blob will
+                //move up. Multiplying `direction` by `speed` determines the blob's
+                //vertical direction
+                blob.vy = speed * direction;
+
+                //Reverse the direction for the next blob
+                direction *= 1;
+
+                //Push the blob into the `blobs` array
+                blobs.push(blob);
+
+                //Add the blob to the `gameScene`
+                stage.addChild(blob);
+            }
+
+            stage.addChild(bunny, healthBar);
+
+            stage.interactive = true;
+            stage.on("mousedown", function(e){  
+                //Make as many blobs as there are `numberOfBlobs`
+                for (let i = 0; i < 2; i++) {
+                    let blobTexture;
+                    //Make a blob
+                    if (i%2 == 0) {
+                        blobTexture = PIXI.Texture.fromImage('images/shoot/red.png');
+                    } else {
+                        blobTexture = PIXI.Texture.fromImage('images/shoot/blue.png');
+                    }
+                    let blob = new PIXI.Sprite(blobTexture);
+                    
+                    blob.scale.x *= 0.1;
+                    blob.scale.y *= 0.1;
+
+                    //Space each blob horizontally according to the `spacing` value.
+                    //`xOffset` determines the point from the left of the screen
+                    //at which the first blob should be added
+                    let x = 800;
+
+                    //Give the blob a random y position
+                    let y = randomInt(0, xOffset);
+
+                    //Set the blob's position
+                    blob.x = x;
+                    blob.y = y;
+
+                    //Set the blob's vertical velocity. `direction` will be either `1` or
+                    //`-1`. `1` means the enemy will move down and `-1` means the blob will
+                    //move up. Multiplying `direction` by `speed` determines the blob's
+                    //vertical direction
+                    blob.vy = speed * direction;
+
+                    //Reverse the direction for the next blob
+                    direction *= 1;
+
+                    //Push the blob into the `blobs` array
+                    blobs.push(blob);
+
+                    //Add the blob to the `gameScene`
+                    stage.addChild(blob);
+                }
+                shoot(bunny.rotation, {
+                    x: bunny.position.x+Math.cos(bunny.rotation)*20,
+                    y: bunny.position.y+Math.sin(bunny.rotation)*20
+                });
+            })
+
+            var bullets = [];  
+            var bulletSpeed = 5;
+            var ballSpeed = 3;
+
+            function shoot(rotation, startPosition){  
+                var bullet = new PIXI.Sprite(carrotTex);
+                bullet.position.x = startPosition.x;
+                bullet.position.y = startPosition.y;
+                bullet.rotation = rotation;
+                stage.addChild(bullet);
+                bullets.push(bullet);
+            }
+
+            function rotateToPoint(mx, my, px, py){  
+                var self = this;
+                var dist_Y = my - py;
+                var dist_X = mx - px;
+                var angle = Math.atan2(dist_Y,dist_X);
+                //var degrees = angle * 180/ Math.PI;
+                return angle;
+            }
+
+            // function checkHist(sprite1, sprite2)
+            // {
+            //     if (b.hitTestRectangle(sprite1, sprite2)) {
+            //         console.log('x')
+            //     }
+            // }
+
+            //The `randomInt` helper function
+            function randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            //The `hitTestRectangle` function
+            function hitTestRectangle(r1, r2) {
+
+                //Define the variables we'll need to calculate
+                let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+
+                //hit will determine whether there's a collision
+                hit = false;
+
+                //Find the center points of each sprite
+                r1.centerX = r1.x + r1.width / 2; 
+                r1.centerY = r1.y + r1.height / 2; 
+                r2.centerX = r2.x + r2.width / 2; 
+                r2.centerY = r2.y + r2.height / 2; 
+
+                //Find the half-widths and half-heights of each sprite
+                r1.halfWidth = r1.width / 2;
+                r1.halfHeight = r1.height / 2;
+                r2.halfWidth = r2.width / 2;
+                r2.halfHeight = r2.height / 2;
+
+                //Calculate the distance vector between the sprites
+                vx = r1.centerX - r2.centerX;
+                vy = r1.centerY - r2.centerY;
+
+                //Figure out the combined half-widths and half-heights
+                combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+                combinedHalfHeights = r1.halfHeight + r2.halfHeight;
+
+                //Check for a collision on the x axis
+                if (Math.abs(vx) < combinedHalfWidths) {
+
+                //A collision might be occuring. Check for a collision on the y axis
+                if (Math.abs(vy) < combinedHalfHeights) {
+
+                    //There's definitely a collision happening
+                    hit = true;
+                } else {
+
+                    //There's no collision on the y axis
+                    hit = false;
+                }
+                } else {
+
+                //There's no collision on the x axis
+                hit = false;
+                }
+
+                //`hit` will be either `true` or `false`
+                return hit;
+            };
+            /* Helper functions */
+
+            // start animating
+            animate();  
+            function animate() {  
+                if (healthBar.outer.width < 0 ) {
+                    message.text = "You lost!";
+                    stage.addChild(message)
+                    // break;
+                } else {
+                    requestAnimationFrame(animate);
+                }
+                let explorerHit = false;
+                // just for fun, let's rotate mr rabbit a little
+                bunny.rotation = rotateToPoint(renderer.plugins.interaction.mouse.global.x, renderer.plugins.interaction.mouse.global.y, bunny.position.x, bunny.position.y);
+                for(var b=bullets.length-1;b>=0;b--){
+                    bullets[b].position.x += Math.cos(bullets[b].rotation)*bulletSpeed;
+                    bullets[b].position.y += Math.sin(bullets[b].rotation)*bulletSpeed;
+                }
+
+                blobs.forEach(function(blob, key) {
+                    //Move the blob
+                    blob.x -= blob.vy;
+                    if (blob.x <= 0) {
+                        healthBar.outer.width -= 20;
+                        blob.destroy();
+                        delete blobs[key];
+                        explorerHit = true;
+                        for (let i = 0; i < 2; i++) {
+                            let blobTexture;
+                            //Make a blob
+                            if (i%2 == 0) {
+                                blobTexture = PIXI.Texture.fromImage('images/shoot/red.png');
+                            } else {
+                                blobTexture = PIXI.Texture.fromImage('images/shoot/blue.png');
+                            }
+                            let blob = new PIXI.Sprite(blobTexture);
+                            
+                            blob.scale.x *= 0.1;
+                            blob.scale.y *= 0.1;
+
+                            //Space each blob horizontally according to the `spacing` value.
+                            //`xOffset` determines the point from the left of the screen
+                            //at which the first blob should be added
+                            let x = 800;
+
+                            //Give the blob a random y position
+                            let y = randomInt(0, xOffset);
+
+                            //Set the blob's position
+                            blob.x = x;
+                            blob.y = y;
+
+                            //Set the blob's vertical velocity. `direction` will be either `1` or
+                            //`-1`. `1` means the enemy will move down and `-1` means the blob will
+                            //move up. Multiplying `direction` by `speed` determines the blob's
+                            //vertical direction
+                            blob.vy = speed * direction;
+
+                            //Reverse the direction for the next blob
+                            direction *= 1;
+
+                            //Push the blob into the `blobs` array
+                            blobs.push(blob);
+
+                            //Add the blob to the `gameScene`
+                            stage.addChild(blob);
+                        }
+                    }
+
+                    if(explorerHit) {
+                        //Make the explorer semi-transparent
+                        //Reduce the width of the health bar's inner rectangle by 1 pixel
+                        healthBar.outer.width -= 0.05;
+                    } 
+
+                    for(var b=bullets.length-1;b>=0;b--){
+                        if (hitTestRectangle(blob, bullets[b])) {
+                            point += 1;
+                            pointText.setText(point);
+                            blob.destroy();
+                            delete blobs[key];
+                        }
+                    }
+                    //Test for a collision. If any of the enemies are touching
+                    //the explorer, set `explorerHit` to `true`
+                });
+                
+                // render the container
+                renderer.render(stage);
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,46 @@
+<html>
+    <head>
+            <title>Draw scroll</title>
+    </head>
+    <body onload="init();">
+        <canvas id="game-canvas" width="512" height="384"></canvas>
+        <script src="../pixi/pixi.min.js"></script>
+        <script>
+            function init() {
+                stage = new PIXI.Container();
+                renderer = PIXI.autoDetectRenderer(
+                    512,
+                    384,
+                    {view:document.getElementById("game-canvas")}
+                );
+
+                var farTexture = PIXI.Texture.fromImage("images/draw/bg-far.png");	
+                far = new PIXI.extras.TilingSprite(farTexture, 512, 256);
+                far.position.x = 0;
+                far.position.y = 0;
+                far.tilePosition.x = 0;
+                far.tilePosition.y = 0;
+                stage.addChild(far);
+
+                var midTexture = PIXI.Texture.fromImage("images/draw/bg-mid.png");
+                mid = new PIXI.extras.TilingSprite(midTexture, 512, 256);
+                mid.position.x = 0;
+                mid.position.y = 128;
+                mid.tilePosition.x = 0;
+                mid.tilePosition.y = 0;
+                stage.addChild(mid);
+
+                requestAnimationFrame(update);
+
+                function update() {
+                    far.tilePosition.x -= 0.128;
+                    mid.tilePosition.x -= 0.64;
+
+                    renderer.render(stage);
+
+                    requestAnimationFrame(update);
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -1,21 +1,37 @@
 <html>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        
-        Cơ
-    </title>
+    <title>Cờ</title>
     <body>
         <style>
+            body {
+                margin:0px;
+            }
             canvas {
                 display: block;
                 margin: 0 auto;
-                border: 1.4px solid #8f8659;
-                border-right: 0px;
             }
         </style>
         <script src="../pixi/pixi.min.js"></script>
         <script>
+            const logicalWidth = 240;
+            const logicalHeight = 240;
+            function resizeHandler()
+            {
+                    const w = Math.max(window.innerWidth, document.documentElement.clientWidth);
+                    const h = Math.max(window.innerHeight, document.documentElement.clientHeight);
+                    
+                    const scaleFactor = Math.min(
+                        w / logicalWidth,
+                        h / logicalHeight
+                    );
+
+                    const newWidth = Math.ceil(logicalWidth * scaleFactor);
+                    const newHeight = Math.ceil(logicalHeight * scaleFactor);
+
+                    app.renderer.resize(newWidth, newHeight);
+                    app.stage.scale.set(scaleFactor);
+            };
             //Aliases
             let Application = PIXI.Application,
                 Container = PIXI.Container,
@@ -28,13 +44,14 @@
                 Rectangle = PIXI.Rectangle;
 
                 let app = new Application ({
-                    width : 240,
-                    height : 240,
+                    width : logicalWidth,
+                    height : logicalHeight,
                     antialiasing: true, //background
-                    transparent: false, //border
-                    resolution: 1
+                    transparent: true, //border
+                    resolution: 1,
+                    autoResize: true
                 });
-                
+
                 let playerTurn = cpuTurn = false;
 
                 let imagePlayer = "player_on.png",
@@ -90,6 +107,7 @@
                 
                 
                 function setup() {
+                    
                     // set background
                     let background = new Sprite(resources["images/chess.json"].textures["startco.png"]),
                         mode1 = new Sprite(resources["images/chess.json"].textures["1.png"]), // easy
@@ -184,7 +202,9 @@
                     handDisplay.vx = 0;
                     handDisplay.vy = 0;
                     
-
+                    resizeHandler();
+                    // listen to resize event
+                    window.addEventListener('resize', resizeHandler);
                     // set event click choose mode
                     mode1.on('pointerdown', function(e) {
                         mode = "easy";

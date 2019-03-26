@@ -1,0 +1,267 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            Đập chuột
+        </title>
+    </head>
+    <body>
+        <script type="text/javascript" src="../pixi/pixi.min.js"></script>
+        <script type="text/javascript">
+            //Aliases
+            let Application = PIXI.Application,
+                Container = PIXI.Container,
+                loader = PIXI.loader,
+                Text = PIXI.Text,
+                TextStyle = PIXI.TextStyle,
+                resources = PIXI.loader.resources,
+                TextureCache = PIXI.utils.TextureCache,
+                Sprite = PIXI.Sprite,
+                Graphics = PIXI.Graphics,
+                Rectangle = PIXI.Rectangle;
+
+            let app = new Application({
+                width: 240,
+                height : 240,
+                antialiasing: true, //background
+                transparent: false, //border
+                resolution: 1
+            });
+
+            loader.add([
+                'images/chuot/intro.png',
+                'images/chuot/bgstart.png',
+                'images/chuot/start.png',
+                'images/chuot/time.png',
+                'images/chuot/timeon.png',
+                'images/chuot/hira.png',
+                'images/chuot/boss.png',
+                'images/chuot/queen.png',
+                'images/chuot/attack.png',
+                'images/chuot/bossdie.png',
+                'images/chuot/hiradie.png',
+                'images/chuot/queendie.png',
+                'images/chuot/timeup.png',
+                'images/chuot/bgtop.png',
+                'images/chuot/bgbottom.png',
+                'images/chuot/centerbot.png',
+                'images/chuot/hummer.png',
+                'images/chuot/centertop.png',
+
+            ]).load(setup);
+
+            document.body.appendChild(app.view);
+
+            let introImage, bgTop, bgCenterTop, bgCenterBot, bgBottom,
+                backgroundStart, startGame, timeBottom, countDown, outerBar, boss, queen, hiraAttack, bossAttack, queenAttack;
+
+            let listHira = [
+                {'flag' : false, 'flagMaxy' : false},
+                {'flag' : false, 'flagMaxy' : false},
+                {'flag' : false, 'flagMaxy' : false},
+                {'flag' : false, 'flagMaxy' : false},
+                {'flag' : false, 'flagMaxy' : false}
+            ];
+            let scrollSpeed = 1;
+
+            /* 
+            Group set image addChild
+            *** 1 -> bgTop
+            *** 2-> bgCenterTop
+            *** 3-> bgCenterBot
+             */
+            let listSoli = [
+                        {
+                            'id' : '0',
+                            'x' : 14,
+                            'maxy' : 39,
+                            'miny' : 81,
+                            'flag' : false,
+                            'group' : 1,
+                        },
+                        {
+                            'id' : '1',
+                            'x' : 94,
+                            'maxy' : 39,
+                            'miny' : 81,
+                            'flag' : false,
+                            'group' : 1,
+                        },
+                        {
+                            'id' : '2',
+                            'x' : 174,
+                            'maxy' : 39,
+                            'miny' : 81,
+                            'flag' : false,
+                            'group' : 1,
+                        },
+                        {
+                            'id' : '3',
+                            'x' : 14,
+                            'maxy' : 24,
+                            'miny' : 67,
+                            'flag' : false,
+                            'group' : 2,
+                        },
+                        {
+                            'id' : '4',
+                            'x' : 94,
+                            'maxy' : 24,
+                            'miny' : 67,
+                            'flag' : false,
+                            'group' : 2,
+                        },
+                        {
+                            'id' : '5',
+                            'x' : 174,
+                            'maxy' : 24,
+                            'miny' : 67,
+                            'flag' : false,
+                            'group' : 2,
+                        },
+                        {
+                            'id' : '6',
+                            'x' : 14,
+                            'maxy' : 26,
+                            'miny' : 67,
+                            'flag' : false,
+                            'group' : 3,
+                        },
+                        {
+                            'id' : '7',
+                            'x' : 94,
+                            'maxy' : 26,
+                            'miny' : 67,
+                            'flag' : false,
+                            'group' : 3,
+                        },
+                        {
+                            'id' : '8',
+                            'x' : 174,
+                            'maxy' : 26,
+                            'miny' : 67,
+                            'flag' : false,
+                            'group' : 3,
+                        },
+                    ];
+
+            function setup()
+            {
+                introImage = new Sprite(resources["images/chuot/intro.png"].texture);
+                introImage.interactive = introImage.buttonMode = true;
+                app.stage.addChild(introImage);
+
+                introImage.on('pointerdown', function(e) {
+                    introImage.destroy();
+                    backgroundStart = new Sprite(resources["images/chuot/bgstart.png"].texture);
+                    bgTop = new Sprite(resources["images/chuot/bgtop.png"].texture);
+                    bgCenterTop = new Sprite(resources["images/chuot/centertop.png"].texture);
+                    bgCenterBot = new Sprite(resources["images/chuot/centerbot.png"].texture);
+                    bgBottom = new Sprite(resources["images/chuot/bgbottom.png"].texture);
+                    startGame = new Sprite(resources["images/chuot/start.png"].texture);
+                    timeBottom = new Sprite(resources["images/chuot/time.png"].texture);
+                    
+                    boss = new Sprite(resources["images/chuot/boss.png"].texture);
+                    queen = new Sprite(resources["images/chuot/queen.png"].texture);
+
+                    /* Set position startGame, timeBottom bgCenterTop */
+                    startGame.position.set((backgroundStart.width - startGame.width)/ 2, (backgroundStart.height - startGame.height)/2);
+                    timeBottom.position.set(5, backgroundStart.height - 18);
+                    bgCenterTop.position.y = bgTop.height - 13;
+                    bgCenterBot.position.y = bgCenterTop.y + bgCenterTop.height - 10;
+                    bgBottom.position.y = backgroundStart.height - bgBottom.height;
+
+                    countDown = new Container();
+                    countDown.position.set(timeBottom.x + timeBottom.width + 5, timeBottom.y + 5);
+                    outerBar = new Graphics();
+                    outerBar.beginFill(0XFFFF33);
+                    outerBar.drawRect(0, 0, 150, 8);
+                    outerBar.endFill();
+                    countDown.addChild(outerBar);
+                    countDown.outer = outerBar;
+                    
+                    app.stage.addChild(bgTop, bgCenterTop, bgCenterBot, bgBottom, startGame, timeBottom, countDown);
+                    
+                    /* Set timeout remove starGame */
+                    setTimeout(() => {
+                        startGame.destroy();
+                        requestAnimationFrame(animate);
+                    }, 1000);
+                });
+            }
+
+            function animate()
+            {
+                requestAnimationFrame(animate);
+                for (let i = 0; i <= listHira.length - 1; i++) {
+                    if (listHira[i].flag === false) {
+                        
+                        let hira = new Sprite(resources["images/chuot/hira.png"].texture);
+                        let random = Math.floor(Math.random() * listSoli.length);
+                        let rand = listSoli[random];
+                        let group;
+
+                        hira.position.set(rand.x, rand.miny + 20 *i);
+                        listHira[i].sprite = hira;
+                        listHira[i].flag = true;
+                        listHira[i].maxy = rand.maxy;
+                        listHira[i].miny = rand.miny;
+                        listHira[i].soliItem = rand;
+                        if (rand.group === 1) {
+                            bgTop.addChild(hira); 
+                            group = bgTop;
+                        } else if(rand.group === 2) {
+                            bgCenterTop.addChild(hira);
+                            group = bgCenterTop;
+                        } else {
+                            bgCenterBot.addChild(hira);
+                            group = bgCenterBot;
+                        }
+                        // set event pointerdown
+                        listHira[i].sprite.interactive = listHira[i].sprite.buttonMode = true;
+                        listHira[i].sprite.on('pointerdown', function(e) {
+                            let hummer = new Sprite(resources["images/chuot/hummer.png"].texture);
+                            let attack = new Sprite(resources["images/chuot/attack.png"].texture);
+                            
+                            hummer.rotation  = 5;
+                            hummer.position.set(this.x, this.y - 10);
+                            attack.position.set(this.x, this.y - 10);
+                            listHira[i].flagMaxy = true;
+                            // Change image
+                            this.setTexture(PIXI.TextureCache["images/chuot/hiradie.png"]);
+                            // Remove event pointer dơn
+                            listHira[i].sprite.off('pointerdown');
+                            group.addChild(hummer, attack);
+                            
+                            setTimeout(() => {
+                                hummer.destroy();
+                                attack.destroy();
+                            }, 200);
+                        });
+                        delete listSoli[random];
+                        //remove value undefine
+                        listSoli = listSoli.filter(Boolean);
+                    } else {
+                        // Check sprite max y
+                        if (listHira[i].flagMaxy === false) {
+                            listHira[i].sprite.position.y = listHira[i].sprite.position.y - 0.5 * scrollSpeed;
+                            if (Math.floor(listHira[i].sprite.position.y) === listHira[i].maxy) {
+                                listHira[i].flagMaxy = true;
+                            }
+                        } else {
+                            listHira[i].sprite.position.y = listHira[i].sprite.position.y + 0.5 * scrollSpeed;
+                            // Check hira scroll bottom min y.
+                            if (listHira[i].sprite.position.y >= listHira[i].miny) {
+                                listHira[i].sprite.interactive = listHira[i].sprite.buttonMode = false;
+                                listSoli.push(listHira[i].soliItem);
+                                listHira[i].sprite.off('pointerdown');
+                                listHira[i].flag = listHira[i].flagMaxy = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+        </script>
+    </body>
+</html>
