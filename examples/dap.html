@@ -6,8 +6,35 @@
         </title>
     </head>
     <body>
+        <style>
+            body {
+                margin:0px;
+            }
+            canvas {
+                display: block;
+                margin: 0 auto;
+            }
+        </style>
         <script type="text/javascript" src="../pixi/pixi.min.js"></script>
         <script type="text/javascript">
+            const logicalWidth = 240;
+            const logicalHeight = 240;
+            function resizeHandler()
+            {
+                    const w = Math.max(window.innerWidth, document.documentElement.clientWidth);
+                    const h = Math.max(window.innerHeight, document.documentElement.clientHeight);
+                    
+                    const scaleFactor = Math.min(
+                        w / logicalWidth,
+                        h / logicalHeight
+                    );
+
+                    const newWidth = Math.ceil(logicalWidth * scaleFactor);
+                    const newHeight = Math.ceil(logicalHeight * scaleFactor);
+
+                    app.renderer.resize(newWidth, newHeight);
+                    app.stage.scale.set(scaleFactor);
+            };
             //Aliases
             let Application = PIXI.Application,
                 Container = PIXI.Container,
@@ -21,8 +48,8 @@
                 Rectangle = PIXI.Rectangle;
 
             let app = new Application({
-                width: 240,
-                height : 240,
+                width: logicalWidth,
+                height : logicalHeight,
                 antialiasing: true, //background
                 transparent: false, //border
                 resolution: 1
@@ -46,13 +73,17 @@
                 'images/chuot/bgbottom.png',
                 'images/chuot/centerbot.png',
                 'images/chuot/hummer.png',
+                'images/chuot/timeover.png',
+                'images/chuot/score.png',
+                'images/chuot/endgame.png',
+                'images/chuot/restart.png',
                 'images/chuot/centertop.png',
 
             ]).load(setup);
 
             document.body.appendChild(app.view);
 
-            let introImage, bgTop, bgCenterTop, bgCenterBot, bgBottom,
+            let introImage, bgTop, bgCenterTop, bgCenterBot, bgBottom, scoreImage,
                 backgroundStart, startGame, timeBottom, countDown, outerBar, boss, queen, hiraAttack, bossAttack, queenAttack;
 
             let listHira = [
@@ -62,8 +93,26 @@
                 {'flag' : false, 'flagMaxy' : false},
                 {'flag' : false, 'flagMaxy' : false}
             ];
-            let scrollSpeed = 1;
+            let style = new TextStyle ({
+                fontFamily: "Arial",
+                fontSize: 14,
+                fill: ['#ffffff'],
+                fontWeight : "bold"
+            });
 
+            let styleEnd = new TextStyle ({
+                fontFamily: "Arial",
+                fontSize: 16,
+                fill: ['#ffffff'],
+                fontWeight : "bold"
+            });
+            let scrollSpeed = 1;
+            let flagcountTime = false;
+            /* countHira set display Boss
+                countBosss set displayQuen
+             */
+            let countHira = countBoss = countTime = Point = sumHira = sumBoss = sumQueen = 0;
+            let pointText = new Text(Point, style);
             /* 
             Group set image addChild
             *** 1 -> bgTop
@@ -146,7 +195,12 @@
                     ];
 
             function setup()
-            {
+            {   
+                /* Set resize on device */
+                resizeHandler();
+                // listen to resize event
+                window.addEventListener('resize', resizeHandler);
+                /* End */
                 introImage = new Sprite(resources["images/chuot/intro.png"].texture);
                 introImage.interactive = introImage.buttonMode = true;
                 app.stage.addChild(introImage);
@@ -160,6 +214,8 @@
                     bgBottom = new Sprite(resources["images/chuot/bgbottom.png"].texture);
                     startGame = new Sprite(resources["images/chuot/start.png"].texture);
                     timeBottom = new Sprite(resources["images/chuot/time.png"].texture);
+                    scoreImage = new  Sprite(resources["images/chuot/score.png"].texture);
+                    
                     
                     boss = new Sprite(resources["images/chuot/boss.png"].texture);
                     queen = new Sprite(resources["images/chuot/queen.png"].texture);
@@ -170,6 +226,8 @@
                     bgCenterTop.position.y = bgTop.height - 13;
                     bgCenterBot.position.y = bgCenterTop.y + bgCenterTop.height - 10;
                     bgBottom.position.y = backgroundStart.height - bgBottom.height;
+                    scoreImage.position.set(110, 5);
+                    pointText.position.set(220 - pointText.width, scoreImage.y);
 
                     countDown = new Container();
                     countDown.position.set(timeBottom.x + timeBottom.width + 5, timeBottom.y + 5);
@@ -180,8 +238,7 @@
                     countDown.addChild(outerBar);
                     countDown.outer = outerBar;
                     
-                    app.stage.addChild(bgTop, bgCenterTop, bgCenterBot, bgBottom, startGame, timeBottom, countDown);
-                    
+                    app.stage.addChild(bgTop, bgCenterTop, bgCenterBot, bgBottom, startGame, timeBottom, countDown, scoreImage, pointText);
                     /* Set timeout remove starGame */
                     setTimeout(() => {
                         startGame.destroy();
@@ -190,23 +247,101 @@
                 });
             }
 
+            function finishGame()
+            {
+                let timeOver = new Sprite(resources["images/chuot/timeover.png"].texture);
+                timeOver.position.set((backgroundStart.width - timeOver.width)/ 2, (backgroundStart.height - timeOver.height)/2);
+                app.stage.addChild(timeOver);
+                setTimeout(() => {
+                    timeOver.destroy();
+                    let sumBossText = new Text(sumBoss, styleEnd);
+                    let sumHiraText = new Text(sumHira, styleEnd);
+                    let sumQueenText = new Text(sumQueen, styleEnd);
+                    sumBossText.position.set(165 - sumBossText.width, 101);
+                    sumHiraText.position.set(165 - sumHiraText.width, 57);
+                    sumQueenText.position.set(165 - sumQueenText.width, 150);
+                    pointText.setText(Point);
+                    pointText.setStyle(styleEnd);
+                    pointText.position.set(165 - pointText.width, 178);
+                    let endGame = new Sprite(resources["images/chuot/endgame.png"].texture);
+                    let restartGame = new Sprite(resources["images/chuot/restart.png"].texture);
+                    restartGame.position.set(10, 195);
+                    app.stage.addChild(endGame, sumBossText, sumHiraText, sumQueenText, pointText, restartGame);
+                    endGame.interactive = endGame.buttomMode = true;
+                    endGame.on('pointerdown', function(e){
+                        endGame.destroy();
+                        restartGame.destroy();
+                        Point = 0;
+                        pointText.setText(Point);
+                        pointText.position.set(220 - pointText.width, scoreImage.y);
+                        countDown.outer.width = 150;
+                        sumBossText.destroy();
+                        sumQueenText.destroy();
+                        sumHiraText.destroy();
+                        requestAnimationFrame(animate);
+                    });
+                }, 1200);
+            }
+
             function animate()
             {
-                requestAnimationFrame(animate);
+                if (Math.floor(countDown.outer.width) == 80 && !flagcountTime) {
+                    flagcountTime = true;
+                    listHira.push(
+                        {'flag' : false, 'flagMaxy' : false},
+                        {'flag' : false, 'flagMaxy' : false},
+                        );
+                        console.log(listHira);
+                }
+                if (countDown.outer.width <= 0) {
+                    for (let i = 0; i <= listHira.length - 1; i++) {
+                        listHira[i].sprite.interactive = listHira[i].sprite.buttonMode = false;
+                        listSoli.push(listHira[i].soliItem);
+                        listHira[i].sprite.off('pointerdown');
+                        listHira[i].sprite.destroy();
+                        listHira[i].flag = listHira[i].flagMaxy = false;
+                    }
+                    // delete 2 value
+                    listHira.splice(5, 7);
+                    finishGame();
+                    return;
+                    // Finish request animation
+                } else {
+                    countDown.outer.width -= 0.06;
+                    requestAnimationFrame(animate);
+                }
                 for (let i = 0; i <= listHira.length - 1; i++) {
                     if (listHira[i].flag === false) {
-                        
-                        let hira = new Sprite(resources["images/chuot/hira.png"].texture);
+                        countTime++;
+                        countHira++;
+                        let hira, Maxy;
                         let random = Math.floor(Math.random() * listSoli.length);
                         let rand = listSoli[random];
                         let group;
+                        if (countBoss > 3) {
+                            countBoss = 0;
+                            Maxy = rand.maxy - 20;
+                            hira = new Sprite(resources["images/chuot/queen.png"].texture);
+                        }  else if (countHira === 10) {
+                            Maxy = rand.maxy - 7;
+                            countHira = 0;
+                            hira = new Sprite(resources["images/chuot/boss.png"].texture);
+                        } else if (countTime%12 == 0 && countHira < 10) {
+                            Maxy = rand.maxy;
+                            hira = new Sprite(resources["images/chuot/timeon.png"].texture);
+                        } else {
+                            Maxy = rand.maxy;
+                            hira = new Sprite(resources["images/chuot/hira.png"].texture);
+                        }
+                        
 
                         hira.position.set(rand.x, rand.miny + 20 *i);
                         listHira[i].sprite = hira;
                         listHira[i].flag = true;
-                        listHira[i].maxy = rand.maxy;
+                        listHira[i].maxy = Maxy;
                         listHira[i].miny = rand.miny;
                         listHira[i].soliItem = rand;
+                        listHira[i].delay = 0;
                         if (rand.group === 1) {
                             bgTop.addChild(hira); 
                             group = bgTop;
@@ -223,42 +358,89 @@
                             let hummer = new Sprite(resources["images/chuot/hummer.png"].texture);
                             let attack = new Sprite(resources["images/chuot/attack.png"].texture);
                             
-                            hummer.rotation  = 5;
-                            hummer.position.set(this.x, this.y - 10);
+                            hummer.rotation = 5.6;
+                            hummer.position.set(this.x, this.y - 20);
                             attack.position.set(this.x, this.y - 10);
                             listHira[i].flagMaxy = true;
-                            // Change image
-                            this.setTexture(PIXI.TextureCache["images/chuot/hiradie.png"]);
-                            // Remove event pointer dơn
-                            listHira[i].sprite.off('pointerdown');
+                            if (this.texture.textureCacheIds == "images/chuot/timeon.png") {
+                                countDown.outer.width += 5;
+                                this.setTexture(PIXI.TextureCache["images/chuot/timeup.png"]);
+                            } else if (this.texture.textureCacheIds == "images/chuot/queen.png") {
+                                sumQueen += 1;
+                                this.setTexture(PIXI.TextureCache["images/chuot/queendie.png"]);
+                                Point += 10000;
+                            } else if (this.texture.textureCacheIds == "images/chuot/hira.png") {
+                                Point += 100;
+                                sumHira += 1;
+                                
+                                this.setTexture(PIXI.TextureCache["images/chuot/hiradie.png"]);
+                            } else {
+                                Point += 1000;
+                                countBoss++;
+                                sumBoss += 1;
+                                this.setTexture(PIXI.TextureCache["images/chuot/bossdie.png"]);
+                            }
                             group.addChild(hummer, attack);
+                            requestAnimationFrame(function() {
+                                for (let j= 0;j < 10; j++) {
+                                    hummer.rotation -= 0.01;
+                                    if (j==9) {
+                                        pointText.setText(Point);
+                                        pointText.position.set(220 - pointText.width, scoreImage.y);
+                                        // Remove event pointer dơn
+                                        listHira[i].sprite.off('pointerdown');
+                                        setTimeout(() => {
+                                            hummer.destroy();
+                                            attack.destroy();
+                                        }, 200);
+                                    }
+                                }
+                            })
                             
-                            setTimeout(() => {
-                                hummer.destroy();
-                                attack.destroy();
-                            }, 200);
                         });
                         delete listSoli[random];
                         //remove value undefine
                         listSoli = listSoli.filter(Boolean);
                     } else {
+                        let delayTime = 10;
+                        if (listHira[i].sprite.texture.textureCacheIds == "images/chuot/timeon.png") {
+                            scrollSpeed = 1.5;
+                            delayTime = 8;
+                        } else if (listHira[i].sprite.texture.textureCacheIds == "images/chuot/queen.png") {
+                            scrollSpeed = 1.7;
+                            delayTime = 5;
+                        } else if (listHira[i].sprite.texture.textureCacheIds == "images/chuot/boss.png") {
+                            scrollSpeed = 1.5;
+                            delayTime = 6;
+                        }
+                        if (countDown.outer.width < 110) {
+                            delayTime -= 1;
+                        }
+                        if (countDown.outer.width < 80) {
+                            delayTime -= 2;
+                        }
                         // Check sprite max y
                         if (listHira[i].flagMaxy === false) {
                             listHira[i].sprite.position.y = listHira[i].sprite.position.y - 0.5 * scrollSpeed;
-                            if (Math.floor(listHira[i].sprite.position.y) === listHira[i].maxy) {
+                            if (Math.floor(listHira[i].sprite.position.y) <= listHira[i].maxy) {
                                 listHira[i].flagMaxy = true;
                             }
                         } else {
-                            listHira[i].sprite.position.y = listHira[i].sprite.position.y + 0.5 * scrollSpeed;
-                            // Check hira scroll bottom min y.
-                            if (listHira[i].sprite.position.y >= listHira[i].miny) {
-                                listHira[i].sprite.interactive = listHira[i].sprite.buttonMode = false;
-                                listSoli.push(listHira[i].soliItem);
-                                listHira[i].sprite.off('pointerdown');
-                                listHira[i].flag = listHira[i].flagMaxy = false;
+                            listHira[i].delay += 1;
+                            /* Check delay */
+                            if (listHira[i].delay >= delayTime) {
+                                listHira[i].sprite.position.y = listHira[i].sprite.position.y + 0.5 * scrollSpeed;
+                                if (listHira[i].sprite.position.y >= listHira[i].miny) {
+                                    listHira[i].sprite.interactive = listHira[i].sprite.buttonMode = false;
+                                    listSoli.push(listHira[i].soliItem);
+                                    listHira[i].sprite.off('pointerdown');
+                                    listHira[i].sprite.destroy();
+                                    listHira[i].flag = listHira[i].flagMaxy = false;
+                                }
                             }
                         }
                     }
+                    
                 }
             }
 

@@ -106,8 +106,8 @@
                 backgroundStart, topImagePlayer, topImagePlayerOff, topImageCpu, topImageCpuOff, turnPlayerText, chessCpuDisplay, chessCpuDisplay1, yellowDisplay, chessPlayerDisplay, chessPlayerDisplay1, handDisplay;
                 
                 
-                function setup() {
-                    
+                function setup() {   
+
                     // set background
                     let background = new Sprite(resources["images/chess.json"].textures["startco.png"]),
                         mode1 = new Sprite(resources["images/chess.json"].textures["1.png"]), // easy
@@ -202,9 +202,11 @@
                     handDisplay.vx = 0;
                     handDisplay.vy = 0;
                     
+                    /* Set resize on device */
                     resizeHandler();
                     // listen to resize event
                     window.addEventListener('resize', resizeHandler);
+                    /* End */
                     // set event click choose mode
                     mode1.on('pointerdown', function(e) {
                         mode = "easy";
