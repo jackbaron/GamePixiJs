@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>Time</title>
+    </head>
+    <body>
+        <script type="text/javascript" src="../pixi/pixi.min.js"></script>
+        <script type="text/javascript">
+            //Aliases
+            let Application = PIXI.Application,
+                Container = PIXI.Container,
+                loader = PIXI.loader,
+                Text = PIXI.Text,
+                TextStyle = PIXI.TextStyle,
+                resources = PIXI.loader.resources,
+                TextureCache = PIXI.utils.TextureCache,
+                Sprite = PIXI.Sprite,
+                Graphics = PIXI.Graphics,
+                Rectangle = PIXI.Rectangle;
+
+            let app = new Application({
+                width: 240,
+                height : 240,
+                antialiasing: true, //background
+                transparent: true, //border
+                resolution: 1
+            })
+            document.body.appendChild(app.view);
+
+            loader.add(['images/timejson.json']).load(setup);
+
+            let backgroundIntro, graphicsIntro, textStart, backgroundStart, graphicStart;
+            let styleEnd = new TextStyle ({
+                fontFamily: "Arial",
+                fontSize: 29,
+                fill: ['#ffffff'],
+                fontWeight : "bold"
+            });
+
+            let flagAlpha = nextIntro =  false;
+
+            function setup()
+            {   
+                backgroundIntro = new Sprite(resources["images/timejson.json"].textures["intro.png"]);
+                graphicsIntro = new Graphics();
+                graphicsIntro.beginFill(0, 0.4);
+                graphicsIntro.drawRect(0, 180, 240, 40);
+                graphicsIntro.endFill();
+                graphicsIntro.interactive = graphicsIntro.buttonMode = true;
+                textStart = new Text("let's go", styleEnd);
+                textStart.position.x = (backgroundIntro.width - textStart.width) /2;
+                textStart.position.y = 185;
+                graphicsIntro.addChild(textStart);
+                graphicsIntro.alpha = 1;
+                graphicStart = new Graphics();
+                graphicStart.beginFill(0,4);
+                graphicStart.drawRect(10, 20, 200, 30);
+                graphicStart.lineStyle(2, 0xFEEB77, 1);
+                graphicStart.drawRoundedRect(50, 440, 100, 100, 16);
+                graphicStart.endFill();
+                app.stage.addChild(backgroundIntro, graphicsIntro, graphicStart);
+                
+                requestAnimationFrame(animate);
+                
+                // next step
+                graphicsIntro.on('pointerdown', function(e) {
+                    nextIntro = true;
+                    textStart.destroy();
+                    graphicsIntro.destroy();
+                    backgroundIntro.destroy();
+                    backgroundStart = new Sprite(resources["images/timejson.json"].textures["start.png"]);
+                    app.stage.addChild(backgroundStart);
+                });
+            }
+
+            function animate()
+            {
+                if (!flagAlpha) {
+                    //opacity = 1;
+                    textStart.alpha -= 0.02   ;
+                    if (textStart.alpha <= 0) {
+                        flagAlpha = true;
+                    }
+                } else {
+                    console.log(flagAlpha);
+                    textStart.alpha += 0.02;
+                    if (textStart.alpha >= 1) {
+                        flagAlpha = false;
+                    }
+                }
+                if (!nextIntro) {
+                    requestAnimationFrame(animate);
+                }
+            }
+        </script>
+    </body>
+</html>

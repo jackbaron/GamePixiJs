@@ -1,0 +1,659 @@
+<html>
+    <head>
+        <title>Soccer</title>
+    </head>
+    <body>
+        <script type="text/javascript" src="../pixi/pixi.min.js"></script>
+        <script>
+            /* Setup responsive screen */
+            const logicalWidth = 240;
+            const logicalHeight = 240;
+            function resizeHandler()
+            {
+                    const w = Math.max(window.innerWidth, document.documentElement.clientWidth);
+                    const h = Math.max(window.innerHeight, document.documentElement.clientHeight);
+                    
+                    const scaleFactor = Math.min(
+                        w / logicalWidth,
+                        h / logicalHeight
+                    );
+
+                    const newWidth = Math.ceil(logicalWidth * scaleFactor);
+                    const newHeight = Math.ceil(logicalHeight * scaleFactor);
+
+                    app.renderer.resize(newWidth, newHeight);
+                    app.stage.scale.set(scaleFactor);
+            };
+            /* Aliases PIXI js */
+            let Application = PIXI.Application,
+                Container = PIXI.Container,
+                loader = PIXI.loader,
+                Text = PIXI.Text,
+                TextStyle = PIXI.TextStyle,
+                resources = PIXI.loader.resources,
+                TextureCache = PIXI.utils.TextureCache,
+                Sprite = PIXI.Sprite,
+                Graphics = PIXI.Graphics,
+                Rectangle = PIXI.Rectangle;
+
+            let app = new Application({
+                width: logicalWidth,
+                height: logicalHeight,
+                antialiasing: true, //background
+                transparent: true, //border
+                resolution: 1
+            });
+
+            document.body.appendChild(app.view);
+
+            loader.add(['images/soccer_test1.json']).load(setup);
+
+            let id, backgroundIntro, keyStart, graphicKey, playerVs, cpuVs, vsText, backgroundStart, graphicStart, playerCpu, graphicTop, textScore, textPoint, playerImage, cpuImage, ball,
+                area1, area2, area3, area4, area5, area6, heightTmp, animatePlayer, animateBallSprite, player1, player2, player3, ball1, ball2, ball3, transcript, roundText, pointPlayerText,
+                pointCpuText, resultRoundPlayer, resultRoundCpu; 
+
+            let flagAlpha = nextIntro = flagVs = flagTimeStart = flagStarGame = turnPlayer = turnCpu = flagCreateSprite = tmpSpriteGoal = animateGoalkeeper = flagPointKey = flagMoveEndImage = false;
+
+            /* flagPointKey check animate goal keep */
+
+            let style = new TextStyle({
+                fontSize : 20,
+                fill: ['#ffffff'],
+                fontWeight : "bold",
+                strokeThickness: 5 // BODER 7X
+            });
+
+            let styleTran = new TextStyle({
+                fontSize : 10,
+                fill: ["#000000"],
+                fontWeight: "bold"
+            });
+
+            let stylePoint = new TextStyle({
+                fontSize : 14,
+                fill: ["#FF0000"],
+                fontWeight: "bold"
+            });
+
+            let playerTextures = [];
+            let ballTextures = []
+            
+            let point = pointPlayer = pointCpu = 0;
+            
+            let round = 1;
+            let p = 0;
+            let m = 20;
+            let n = 0;
+            let endImageMove = 0;
+
+            let directionGoalKeep, directionBall, endImage, playerImageEnd;
+
+            let listRandomDirection = ["left", "right", "lefttop", "top", "righttop", "bottom"];
+
+            function setup()
+            {
+                turnPlayer= true;
+                /* Set resize on device */
+                // resizeHandler();
+                // window.addEventListener('resize', resizeHandler);
+                /* End */
+                
+                graphicKey = new Graphics();
+                graphicKey.beginFill(0, 0.4);
+                graphicKey.drawRect(0, 170, logicalWidth, 40);
+                graphicKey.endFill();
+                id = resources["images/soccer_test1.json"].textures;
+                backgroundIntro = new Sprite(id["intro.png"]);
+                keyStart = new Sprite(id["key_start.png"]);
+                keyStart.position.y = 177;
+                keyStart.position.x = (logicalWidth - keyStart.width)/ 2;
+                keyStart.interactive = keyStart.buttonMode = true;
+                // Setup animation key start
+                requestAnimationFrame(animateKeyStart);
+                app.stage.addChild(backgroundIntro, graphicKey, keyStart);
+
+                /* Setup event pointer down */
+                keyStart.on('pointerdown', function(e){
+                    nextIntro = true;
+                    // remove all children
+                    for (var i = app.stage.children.length - 1; i >= 0; i--) {
+                        app.stage.removeChild(app.stage.children[i]);
+                    }
+                    // create sprite player
+                    player1 = new Sprite(id["player1.png"]);
+                    player2 = new Sprite(id["player2.png"]);
+                    player3 = new Sprite(id["player3.png"]);
+                    playerVs = new Sprite(id["playerVs.png"]);
+                    // create sprite ball
+                    ball1 = new Sprite(id["ball1.png"]);
+                    ball2 = new Sprite(id["ball2.png"]);
+                    ball3 = new Sprite(id["ball3.png"]);
+
+                    cpuVs = new Sprite(id["cpuVs.png"]);
+                    vsText = new Sprite(id["vs.png"]);
+                    backgroundStart = new Sprite(id["start.png"]);
+                    backgroundStart.alpha = 0.5;
+                    playerCpu = new Sprite(id["playercpu.png"]);
+                    textScore = new Text("SCORE", style);
+                    textPoint = new Text(point, style);
+                    playerImage = new Sprite(id["playerOn.png"]);
+                    cpuImage = new Sprite(id["cpuOff.png"]);
+                    ball = new Sprite(id["ball.png"]);
+                    area1 = new Sprite(id["1.png"]);
+                    area2 = new Sprite(id["2.png"]);
+                    area3 = new Sprite(id["3.png"]);
+                    area4 = new Sprite(id["4.png"]);
+                    area5 = new Sprite(id["5.png"]);
+                    area6 = new Sprite(id["6.png"]);
+                    transcript = new Sprite(id["transcript.png"]);
+                    roundText = new Text(round, styleTran);
+                    pointPlayerText = new Text(pointPlayer, stylePoint);
+                    pointCpuText =  new Text(pointCpu, stylePoint);
+                    resultRoundPlayer = new Sprite(id["pointOk.png"]);
+                    resultRoundCpu = new Sprite(id["pointMiss.png"]);
+
+                    graphicTop = new Graphics();
+                    graphicTop.beginFill(0xFDFDFD, 0.5);
+                    graphicTop.drawRect(0, 0, logicalWidth, 40);
+                    graphicTop.endFill();
+                    graphicStart = new Graphics();
+                    // set position sprite
+                    textScore.position.set(10, 5);
+                    textPoint.position.set(200, 5);
+                    playerCpu.position.set(0, 65);
+                    // setup ball
+                    ball.position.x = (logicalWidth - ball.width) / 2;
+                    ball.position.y = logicalHeight - 50;
+                    ball.visible = false;
+                    area1.position.x = 35;
+                    area1.position.y = 45;
+                    area2.position.x = area1.position.x + area1.width;
+                    area2.position.y = area1.position.y;
+                    area3.position.set(area2.position.x + area2.width, area1.position.y)
+                    area4.position.set(area1.position.x, area1.position.y + area1.height);
+                    area5.position.set(area2.position.x, area2.position.y + area2.height);
+                    area6.position.set(area3.position.x, area3.position.y + area3.height);
+                    area1.interactive = area2.interactive = area3.interactive = area4.interactive = area5.interactive = area6.interactive = true;
+                    area1.buttonMode = area2.buttonMode = area3.buttonMode = area4.buttonMode = area5.buttonMode = area6.buttonMode = true;
+
+                    // push list create animate sprite player
+                    for (let i = 1; i <= 3; i++) {
+                        let texturePlayer = PIXI.Texture.fromFrame('player' + i + '.png');
+                        playerTextures.push(texturePlayer);
+                    }
+
+                    // push list create animate sprite ball
+                    for (let i = 1; i <= 3; i++) {
+                        let textureBall = PIXI.Texture.fromFrame('ball' + i + '.png');
+                        ballTextures.push(textureBall);
+                    }
+
+                    playerVs.position.y = logicalHeight - playerVs.height;
+                    playerVs.position.x = -playerVs.width;
+                    cpuVs.position.y = logicalHeight - cpuVs.height;
+                    cpuVs.position.x = logicalWidth + (playerVs.width - cpuVs.width);
+
+                    if (turnPlayer) {
+                        directionGoalKeep = listRandomDirection[Math.floor(Math.random() * listRandomDirection.length)];
+                    }
+                    
+                    console.log(directionGoalKeep);
+                    area1.on('pointerdown', function(e) {
+                        if (turnPlayer) {
+                            // set direction cpu goalKeep
+                            directionBall = "lefttop";
+                            playerAnimate();
+                        } else {
+
+                        }
+                    });
+
+                    area2.on('pointerdown', function(e) {
+                        if (turnPlayer) {
+                            // set direction cpu goalKeep
+                            directionBall = "top";
+                            playerAnimate();
+                        } else {
+
+                        }
+                    });
+
+                    area3.on('pointerdown', function(e) {
+                        if (turnPlayer) {
+                            directionBall = "righttop";
+                            playerAnimate();
+                        } else {
+                            
+                        }
+                    });
+
+                    area4.on('pointerdown', function(e) {
+                        if (turnPlayer) {
+                            directionBall = "left";
+                            playerAnimate();
+                        } else {
+                            
+                        }
+                    });
+
+                    area5.on('pointerdown', function(e) {
+                        if (turnPlayer) {
+                            directionBall = "bottom";
+                            playerAnimate();
+                        } else {
+                            
+                        }
+                    });
+
+                    area6.on('pointerdown', function(e) {
+                        if (turnPlayer) {
+                            directionBall = "right";
+                            playerAnimate();
+                        } else {
+                            
+                        }
+                    });
+
+                    vsText.scale.x *= 1.5;
+                    vsText.scale.y *= 1.5;
+                    app.stage.addChild(backgroundStart, textScore, textPoint, playerCpu, graphicTop, graphicStart, playerVs, cpuVs, ball);
+                    requestAnimationFrame(setupIntroGame);
+                    
+                });
+            }
+
+            let tmpBall = 0;
+            
+            /**
+             * * Function setup animation ball
+              */
+            function animateBall()
+            {
+                
+                tmpBall++;
+                if (tmpBall > 3) {
+                    tmpBall = 1;
+                }
+                ball.setTexture(PIXI.TextureCache["ball" + tmpBall+ ".png"]);
+
+                switch (directionGoalKeep) {
+                    case "left" :
+                        // direction left
+                        cpuImage.setTexture(PIXI.TextureCache["cpugoalkeepleft.png"]);
+                        cpuImage.position.x -= 1.5;
+                        if (!tmpSpriteGoal) {
+                            cpuImage.position.y += cpuImage.height;
+                            tmpSpriteGoal = true;
+                        }
+                    break;
+                    case "lefttop" :
+                        // direction left top
+                        cpuImage.setTexture(PIXI.TextureCache["cpugoalkeeplefttop.png"]);
+                        cpuImage.position.x -= 1.3 ;
+                        cpuImage.position.y -= 1 ;
+                    break;
+                    case "top" :
+                        // direction top
+                        cpuImage.setTexture(PIXI.TextureCache["cpugoalkeeptop.png"]);
+                        cpuImage.position.y -= 1;
+                    break; 
+                    case "righttop" :
+                        // direction right top
+                        cpuImage.setTexture(PIXI.TextureCache["cpugoalkeeprighttop.png"]);
+                        cpuImage.position.x += 1.3 ;
+                        cpuImage.position.y -= 1 ;
+                    break; 
+                    case "right":
+                        // direction right 
+                        cpuImage.setTexture(PIXI.TextureCache["cpugoalkeepright.png"]);
+                        cpuImage.position.x += 1.3;
+                        if (!tmpSpriteGoal) {
+                            cpuImage.position.y += cpuImage.height;
+                            tmpSpriteGoal = true;
+                        }
+                    break;
+                    case "bottom":
+                        // direction bottom
+                        cpuImage.setTexture(PIXI.TextureCache["cpugoalkeepbottom.png"]);
+                        if (!tmpSpriteGoal) {
+                            cpuImage.position.x += 4 ;
+                            cpuImage.position.y += 4 ;
+                            tmpSpriteGoal = true;
+                        }
+                    break;
+                }
+
+                switch (directionBall) {
+                    case "left" :
+                        // direction left
+                        ball.position.x -= 3;
+                        ball.position.y -= 5;
+                        
+                        if (ball.position.y <= 100) {
+                            finishTheTurn();
+                            return;
+                        }
+                    break;
+                    case "lefttop" :
+                        // direction left top
+                        ball.position.x -= 2;
+                        ball.position.y -= 5;
+                        if (ball.position.x <= 50) {
+                            finishTheTurn();
+                            return;
+                        }
+                    break;
+                    case "top" :
+                        // direction top
+                            ball.position.y -= 5;
+                            if (ball.position.y <= 50) {
+                                finishTheTurn();
+                                return;
+                            }
+                    break; 
+                    case "righttop" :
+                        // direction right top
+                            ball.position.y -= 5;
+                            ball.position.x += 2;
+                            if (ball.position.y <= 50) {
+                                finishTheTurn();
+                                return;
+                            }
+                    break; 
+                    case "right":
+                        // direction right 
+                            ball.position.x += 3;
+                            ball.position.y -= 5;
+                            if (ball.position.y <= 100) {
+                                finishTheTurn();
+                                return;
+                            }
+                    break;
+                    case "bottom":
+                        // direction bottom
+                        ball.position.y -= 2;
+                        if (ball.position.y <= 100) {
+                            finishTheTurn();
+                            return;
+                        }
+                    break;
+                }
+                app.stage.addChild(ball);
+                requestAnimationFrame(animateBall);
+            }
+            
+            /**
+             * * function setup finis the turn
+             * TODO: handling animation next the turn (CPU)
+             */
+            function finishTheTurn()
+            {
+                if (turnPlayer) {
+                    pointPlayer = 1;
+                    if (directionBall != directionGoalKeep) {
+                        // Goal
+                        resultRoundPlayer.setTexture(PIXI.TextureCache["pointOk.png"]);
+                        playerImageEnd = new Sprite(id["goalPlayer.png"]);
+                        endImage = new Sprite(id["goal.png"]);
+                        point += 100;
+                        endImage.position.x = -1;
+                        endImage.position.y = (logicalHeight - endImage.height)/ 2;
+                        playerImageEnd.position.x = logicalWidth - playerImageEnd.width;
+                        playerImageEnd.position.y = logicalHeight;
+                    } else {
+                        // Miss
+                        resultRoundPlayer.setTexture(PIXI.TextureCache["pointMiss.png"]);
+                        playerImageEnd = new Sprite(id["missPlayer.png"]);
+                        endImage = new Sprite(id["miss.png"]);
+                        playerImageEnd.position.x = -1;
+                        playerImageEnd.position.y = logicalHeight - playerImageEnd.height;
+                        endImage.position.x = (logicalWidth - endImage.width)/ 2;
+                        endImage.position.y = (logicalHeight - endImage.height)/ 2;
+                    }
+                    endImageMove = 0;
+                    flagMoveEndImage = true;
+                    pointPlayerText.setText(pointPlayer);
+                    textPoint.setText(point);
+                    resultRoundPlayer.position.x = pointPlayerText.position.x - 30;
+                    resultRoundPlayer.position.y = pointPlayerText.position.y + 1;
+                    backgroundStart.tint = 0xEEEEEE;
+                    app.stage.addChild(resultRoundPlayer, playerImageEnd, endImage);
+                    if (directionBall == directionGoalKeep) {
+                        requestAnimationFrame(animateMissImage);
+                    } else {
+                        requestAnimationFrame(animateGoalImage);
+                    }
+                } else {
+
+                }
+                console.log('finish');
+            }
+
+            /**
+             * * function setup animation imageGoal.
+             * TODO: create function handling animation next the turn
+            */
+            function animateGoalImage()
+            {
+                endImage.position.x += 1;
+                playerImageEnd.position.y -= 3.8;
+                if (endImage.position.x >= (logicalWidth - endImage.width)/ 2) {
+                    // stop animation
+                    return;
+                }
+                requestAnimationFrame(animateGoalImage);
+            }
+            
+            /**
+             * * function setup animation imageMiss.
+             * TODO: create function handling animation next the turn
+            */
+            function animateMissImage()
+            {
+                endImage.position.y += 0.5;
+                playerImageEnd.position.x += 0.3;
+                if (flagMoveEndImage) {
+                    endImage.position.x += 0.5;
+                    if (endImage.position.x >= 45.5) {
+                        endImageMove++;
+                        flagMoveEndImage = false;
+                    }
+                } else {
+                    endImage.position.x -= 0.5;
+                    if (endImage.position.x <= 38.5) {
+                        endImageMove++;
+                        flagMoveEndImage = true;
+                    }
+                }
+                if (endImageMove === 4) {
+                    return;
+                    // stop animate 
+                }
+                requestAnimationFrame(animateMissImage);
+            }
+
+            /**
+             * * function setup animation player
+             * */
+            function playerAnimate()
+            {
+                flagPointKey = true;
+                area1.visible = area2.visible = area3.visible = area4.visible = area5.visible = area6.visible = playerImage.visible = false;
+                animatePlayer = new PIXI.extras.AnimatedSprite(playerTextures);
+                animatePlayer.x = playerImage.x;
+                animatePlayer.y = playerImage.y;
+                animatePlayer.gotoAndPlay(0);
+                animatePlayer.animationSpeed = 0.09;
+                animatePlayer.loop = false;
+                animatePlayer.onComplete = function() {
+                    animateBall();
+                };
+                app.stage.addChild(animatePlayer);
+            }
+
+            /**
+             * * function setup animation player
+             * */
+            function setupIntroGame()
+            {
+                // setup player and cpu animate scroll left and right center screen
+                if (playerVs.position.x < 0 && !flagStarGame) {
+                    p += 1;
+                    playerVs.position.x += 2;
+                    cpuVs.position.x -= 2;
+                    graphicStart.clear();
+                    graphicStart.lineStyle(p, 000000);
+                    graphicStart.moveTo(0,160);
+                    graphicStart.lineTo(logicalWidth, 160);
+                }
+
+                //? set position and addChild vs
+                if (p == 40 && !flagStarGame) {
+                    flagVs = true;
+                    vsText.position.x = (logicalWidth - vsText.width) /2 ;
+                    vsText.position.y = graphicStart.getBounds().y + 3;
+                    app.stage.addChild(vsText);
+                }
+
+                // set animation vs
+                if (flagVs && vsText.scale.x > 1) {
+                    vsText.scale.x -= 0.025;
+                    vsText.scale.y -= 0.025;
+                    vsText.position.x +=0.8;
+                }
+
+                if (vsText.scale.x <= 1 && !flagTimeStart) {
+                    flagTimeStart = true;
+                    // set time 2s start game
+                    setTimeout(() => {
+                        flagStarGame = true;
+                    }, 2000);
+                }
+
+                // Start game
+                if (flagStarGame) {
+                    // player and cpu scroll out screen
+                    if (playerVs.position.x >= -playerVs.width) {
+                        playerVs.position.x -= 2;
+                        cpuVs.position.x += 2;
+                        playerCpu.alpha -= 0.025;
+                        if (p > 3) {
+                            p -= 5;
+                            graphicStart.clear();
+                            graphicStart.lineStyle(40, 000000);
+                            graphicStart.moveTo(-p,0);
+                            graphicStart.lineTo(p*2, 0);
+                            graphicStart.x = 120;
+                            graphicStart.y = 160;
+                        } else {
+                            n += 5;
+                            m -= 0.5;
+                            graphicStart.clear();
+                            graphicStart.lineStyle(m, 000000);
+                            graphicStart.moveTo(-p,-n);
+                            graphicStart.lineTo(p, n);
+                            graphicStart.alpha -= 0.02
+                            graphicStart.x = 120;
+                            graphicStart.y = 160;
+                            vsText.scale.y -= 0.03;
+                        }
+                    } else {
+                        // start game remove intro
+                        backgroundStart.alpha = 1;
+                        graphicStart.clear();
+                        graphicTop.clear();
+                        graphicTop.beginFill(0x444444, 0.5);
+                        graphicTop.drawRect(0, 0, logicalWidth, 40);
+                        graphicTop.endFill();
+                        vsText.visible = false;
+                        transcript.position.set(logicalWidth - transcript.width - 5, logicalHeight - transcript.height - 5);
+                        roundText.position.x = transcript.position.x + 45;
+                        roundText.position.y = transcript.position.y + 3;
+                        pointPlayerText.position.x = roundText.position.x + 31;
+                        pointPlayerText.position.y = roundText.position.y + 12;
+                        pointCpuText.position.x = pointPlayerText.position.x;
+                        pointCpuText.position.y = pointPlayerText.position.y + 17;
+                        app.stage.addChild(textScore, textPoint, transcript, roundText, pointPlayerText, pointCpuText);
+                        app.ticker.add(delta => gameLoop(delta));
+                        return;
+                    }
+                }
+
+                requestAnimationFrame(setupIntroGame);
+            }
+            
+            function gameLoop(delta)
+            {   
+                if (turnPlayer) {
+                    playerOn();
+                } else {
+                    cpuOn();
+                }
+            }
+
+            /* Function setup Player turn On*/
+            function playerOn()
+            {
+                if (!flagCreateSprite) {
+                    playerImage.destroy();
+                    cpuImage.destroy();
+                    ball.visible = true;
+                    // setup create sprite the first
+                    playerImage = new Sprite(id["playerOn.png"]);
+                    playerImage.position.x = (logicalWidth - playerImage.width)/ 2 - 30;
+                    playerImage.position.y = logicalHeight - playerImage.height - 6;
+                    cpuImage = new Sprite(id["cpuOff.png"]);
+                    cpuImage.position.x = (logicalWidth - cpuImage.width)/ 2;
+                    cpuImage.position.y = (logicalHeight - playerImage.height) / 2 - 5;
+                    heightTmp = cpuImage.position.y;
+                    app.stage.addChild(playerImage, cpuImage, area1, area2, area3, area4, area5, area6);
+                    flagCreateSprite = true;
+                }
+
+                if (!flagPointKey) {
+                    // animate cpu
+                    if (!animateGoalkeeper) {
+                        cpuImage.y -= 0.03;
+                        if (cpuImage.y <= heightTmp - 1) {
+                            animateGoalkeeper = true;
+                        }
+                    } else {
+                        cpuImage.y += 0.03;
+                        if (cpuImage.y >= heightTmp) {
+                            animateGoalkeeper = false;
+                        }
+                    }
+                }
+
+            }
+
+            /* Function setup Cpu turn On*/
+            function cpuOn()
+            {
+
+            }
+
+            /**
+             * * Function setup animation key start game
+              */
+            function animateKeyStart()
+            {
+                if (!flagAlpha) {
+                    //opacity = 1;
+                    keyStart.alpha -= 0.02   ;
+                    if (keyStart.alpha <= 0) {
+                        flagAlpha = true;
+                    }
+                } else {
+                    keyStart.alpha += 0.02;
+                    if (keyStart.alpha >= 1) {
+                        flagAlpha = false;
+                    }
+                }
+                if (!nextIntro) {
+                    requestAnimationFrame(animateKeyStart);
+                }
+            }
+        </script>
+    </body>
+</html>

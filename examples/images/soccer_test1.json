@@ -1,0 +1,296 @@
+{"frames": {
+
+"1.png":
+{
+	"frame": {"x":1043,"y":1,"w":56,"h":45},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":45},
+	"sourceSize": {"w":56,"h":45}
+},
+"2.png":
+{
+	"frame": {"x":1064,"y":154,"w":17,"h":21},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":20,"y":14,"w":17,"h":21},
+	"sourceSize": {"w":56,"h":45}
+},
+"3.png":
+{
+	"frame": {"x":963,"y":191,"w":56,"h":45},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":45},
+	"sourceSize": {"w":56,"h":45}
+},
+"4.png":
+{
+	"frame": {"x":1064,"y":108,"w":18,"h":21},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":19,"y":12,"w":18,"h":21},
+	"sourceSize": {"w":56,"h":45}
+},
+"5.png":
+{
+	"frame": {"x":1010,"y":196,"w":56,"h":45},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":45},
+	"sourceSize": {"w":56,"h":45}
+},
+"6.png":
+{
+	"frame": {"x":1064,"y":131,"w":18,"h":21},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":19,"y":12,"w":18,"h":21},
+	"sourceSize": {"w":56,"h":45}
+},
+"ball.png":
+{
+	"frame": {"x":1041,"y":59,"w":22,"h":23},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":22,"h":23},
+	"sourceSize": {"w":25,"h":28}
+},
+"ball1.png":
+{
+	"frame": {"x":1041,"y":59,"w":22,"h":23},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":22,"h":23},
+	"sourceSize": {"w":25,"h":28}
+},
+"ball2.png":
+{
+	"frame": {"x":1065,"y":59,"w":22,"h":23},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":22,"h":23},
+	"sourceSize": {"w":25,"h":28}
+},
+"ball3.png":
+{
+	"frame": {"x":1071,"y":84,"w":22,"h":23},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":22,"h":23},
+	"sourceSize": {"w":25,"h":28}
+},
+"cpugoalkeepbottom.png":
+{
+	"frame": {"x":886,"y":178,"w":36,"h":66},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":4,"y":2,"w":36,"h":66},
+	"sourceSize": {"w":43,"h":70}
+},
+"cpugoalkeepleft.png":
+{
+	"frame": {"x":927,"y":105,"w":83,"h":35},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":83,"h":35},
+	"sourceSize": {"w":86,"h":37}
+},
+"cpugoalkeeplefttop.png":
+{
+	"frame": {"x":791,"y":47,"w":75,"h":75},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":1,"w":75,"h":75},
+	"sourceSize": {"w":78,"h":79}
+},
+"cpugoalkeepright.png":
+{
+	"frame": {"x":999,"y":99,"w":83,"h":35},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":83,"h":35},
+	"sourceSize": {"w":86,"h":37}
+},
+"cpugoalkeeprighttop.png":
+{
+	"frame": {"x":796,"y":124,"w":75,"h":75},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":1,"w":75,"h":75},
+	"sourceSize": {"w":78,"h":79}
+},
+"cpugoalkeeptop.png":
+{
+	"frame": {"x":958,"y":59,"w":38,"h":81},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":38,"h":81},
+	"sourceSize": {"w":43,"h":87}
+},
+"cpuOff.png":
+{
+	"frame": {"x":873,"y":105,"w":52,"h":71},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":52,"h":71},
+	"sourceSize": {"w":57,"h":76}
+},
+"cpuVs.png":
+{
+	"frame": {"x":641,"y":126,"w":70,"h":153},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":8,"y":6,"w":70,"h":153},
+	"sourceSize": {"w":78,"h":159}
+},
+"goal.png":
+{
+	"frame": {"x":878,"y":1,"w":163,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":163,"h":56},
+	"sourceSize": {"w":163,"h":56}
+},
+"goalPlayer.png":
+{
+	"frame": {"x":485,"y":1,"w":149,"h":156},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":1,"y":0,"w":149,"h":156},
+	"sourceSize": {"w":150,"h":156}
+},
+"intro.png":
+{
+	"frame": {"x":1,"y":1,"w":240,"h":240},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":240,"h":240},
+	"sourceSize": {"w":240,"h":240}
+},
+"key_start.png":
+{
+	"frame": {"x":1036,"y":99,"w":95,"h":26},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":95,"h":26},
+	"sourceSize": {"w":107,"h":26}
+},
+"miss.png":
+{
+	"frame": {"x":641,"y":198,"w":143,"h":55},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":143,"h":55},
+	"sourceSize": {"w":143,"h":55}
+},
+"missPlayer.png":
+{
+	"frame": {"x":485,"y":159,"w":93,"h":94},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":4,"w":93,"h":94},
+	"sourceSize": {"w":98,"h":104}
+},
+"player1.png":
+{
+	"frame": {"x":964,"y":99,"w":33,"h":90},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":33,"h":90},
+	"sourceSize": {"w":38,"h":94}
+},
+"player2.png":
+{
+	"frame": {"x":580,"y":159,"w":59,"h":94},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":1,"y":1,"w":59,"h":94},
+	"sourceSize": {"w":62,"h":97}
+},
+"player3.png":
+{
+	"frame": {"x":868,"y":59,"w":44,"h":88},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":1,"y":3,"w":44,"h":88},
+	"sourceSize": {"w":47,"h":92}
+},
+"playercpu.png":
+{
+	"frame": {"x":636,"y":1,"w":240,"h":44},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":240,"h":44},
+	"sourceSize": {"w":240,"h":44}
+},
+"playerOn.png":
+{
+	"frame": {"x":964,"y":99,"w":33,"h":90},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":3,"w":33,"h":90},
+	"sourceSize": {"w":38,"h":94}
+},
+"playerVs.png":
+{
+	"frame": {"x":636,"y":47,"w":77,"h":153},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":77,"h":153},
+	"sourceSize": {"w":80,"h":153}
+},
+"pointMiss.png":
+{
+	"frame": {"x":1041,"y":84,"w":13,"h":13},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":13,"h":13},
+	"sourceSize": {"w":13,"h":13}
+},
+"pointOk.png":
+{
+	"frame": {"x":1056,"y":84,"w":13,"h":13},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":13,"h":13},
+	"sourceSize": {"w":13,"h":13}
+},
+"start.png":
+{
+	"frame": {"x":243,"y":1,"w":240,"h":240},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":240,"h":240},
+	"sourceSize": {"w":240,"h":240}
+},
+"transcript.png":
+{
+	"frame": {"x":786,"y":201,"w":98,"h":52},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":98,"h":52},
+	"sourceSize": {"w":98,"h":52}
+},
+"vs.png":
+{
+	"frame": {"x":924,"y":190,"w":60,"h":37},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":60,"h":37},
+	"sourceSize": {"w":60,"h":37}
+}},
+"animations": {
+	"ball": ["ball1.png","ball2.png","ball3.png"],
+	"player": ["player1.png","player2.png","player3.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "soccer_test1.png",
+	"format": "RGBA8888",
+	"size": {"w":1095,"h":254},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:b5e4d5e438bec5aebe201b744bf394aa:7850f3421d06fcc88f8a6c7c79e7ace3:d3eab56f89eae8cc3c38039fc35e2b6b$"
+}
+}

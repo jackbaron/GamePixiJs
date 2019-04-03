@@ -374,7 +374,7 @@
                         yellowSuggest = []; 
                         handDisplay.position.set(chessPieceX- 3, chessPieceY + heightChess/2 -3);
                         groupContainer.addChild(handDisplay);
-                        //suggesst CPU
+                        //suggest CPU
                         playerTurn = true;
                         cpuTurn = false;
                         let timeOut = listChessChange[direction].length * 0.09 * 4 + 1400;
@@ -401,7 +401,7 @@
                                 }, timeOut);
                             } else {
                                 //end game
-                                //spirte end game
+                                //sprite end game
                                 setTimeout(function(){
                                     passImage.visible = false;
                                     finishGame();
@@ -419,7 +419,7 @@
                     restartImage.position.set((containerWidth - restartImage.width) /2, (containerHeight - restartImage.height)/ 2);
                     messLose = new Sprite(resources["images/co/mes_lose.png"].texture);
                     messLose.position.set((containerWidth - messLose.width) / 2, 5);
-                    //spirte end game
+                    //sprite end game
                     if (pointPlayerText == pointCpuText) {
                         drawImage = new Sprite(resources["images/co/draw.png"].texture);
                         drawImage.position.set((containerWidth - drawImage.width) / 2, centerScreenHeight);
@@ -524,7 +524,7 @@
                     for (let i in coordinates) {
                         coordinates[i].forEach(function(element, key) {
                             if (key === coordinates[i].length - 1) {
-                                // check and meger list chess change
+                                // check and merge list chess change
                                 let coordinateTmp = element.x + "-" + element.y;
                                 if (arrTmp[coordinateTmp] === undefined) {
                                     arrTmp[coordinateTmp] = i;
