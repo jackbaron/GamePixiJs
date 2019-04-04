@@ -52,7 +52,7 @@
                 area1, area2, area3, area4, area5, area6, heightTmp, animatePlayer, animateBallSprite, player1, player2, player3, ball1, ball2, ball3, transcript, roundText, pointPlayerText,
                 pointCpuText, resultRoundPlayer, resultRoundCpu; 
 
-            let flagAlpha = nextIntro = flagVs = flagTimeStart = flagStarGame = turnPlayer = turnCpu = flagCreateSprite = tmpSpriteGoal = animateGoalkeeper = flagPointKey = flagMoveEndImage = false;
+            let flagAlpha = nextIntro = flagVs = flagTimeStart = flagStarGame = turnPlayer = turnCpu = flagCreateSprite = tmpSpriteGoal = animateGoalkeeper = flagNextTheTurn= flagPointKey = flagMoveEndImage = false;
 
             /* flagPointKey check animate goal keep */
 
@@ -83,12 +83,14 @@
             let round = 1;
             let p = 0;
             let m = 20;
-            let n = 0;
+            let n = tmpXNextTheTurn = 0;
             let endImageMove = 0;
 
             let directionGoalKeep, directionBall, endImage, playerImageEnd;
 
             let listRandomDirection = ["left", "right", "lefttop", "top", "righttop", "bottom"];
+
+            let graphicNextTheTurn = ["next1", "next2", "next3", "next4", "next5", "next6", "next7", "next8"];
 
             function setup()
             {
@@ -384,7 +386,6 @@
             
             /**
              * * function setup finis the turn
-             * TODO: handling animation next the turn (CPU)
              */
             function finishTheTurn()
             {
@@ -423,15 +424,70 @@
                     } else {
                         requestAnimationFrame(animateGoalImage);
                     }
+                    setTimeout(() => {
+                        graphicNextTheTurn.forEach(function(element, key) {
+                            element = new Graphics();
+                            element.beginFill(0x000000);
+                            // scroll left -> right
+                            if (key%2 ==0 || key == 0) {
+                                element.drawRect(0 - logicalWidth, tmpXNextTheTurn, logicalWidth, logicalHeight/ 8);
+                            } else {
+                                // scroll right -> left
+                                element.drawRect(logicalWidth + 1, tmpXNextTheTurn, logicalWidth, logicalHeight/ 7);
+                            }
+                            element.endFill();
+                            tmpXNextTheTurn += element.getBounds().height;
+                            delete graphicNextTheTurn[key];
+                            graphicNextTheTurn.push(element);
+                            app.stage.addChild(element);
+                        });
+                        //remove empty array
+                        graphicNextTheTurn = graphicNextTheTurn.filter(function (el) {
+                            return el != null;
+                        });
+                        requestAnimationFrame(animateNextTheTurn);
+                    }, 2000);
                 } else {
 
                 }
-                console.log('finish');
+            }
+            /**
+            * * Function handling animation next the turn
+            * ? @flagNextTheTurn check break animation
+             */
+            
+            function animateNextTheTurn()
+            {
+                graphicNextTheTurn.forEach(function(element, key) {
+                    if (key%2 ==0 || key == 0) {
+                        element.x += 5;
+                    } else {
+                        element.x -= 5;
+                    }
+                    if (key == graphicNextTheTurn.length - 1 && element.x <= 0 - element.width) {
+                        flagNextTheTurn = true;
+                    }
+                });
+                if (flagNextTheTurn) {
+                    setTimeout(() => {
+                        // remove all graphic and create list array
+                        graphicNextTheTurn.forEach(function(element, key) {
+                            element.destroy();
+                        })
+                        graphicNextTheTurn = ["next1", "next2", "next3", "next4", "next5", "next6", "next7", "next8"];
+                        // remove sprite end the turn player
+                        playerImageEnd.destroy();
+                        endImage.destroy();
+                        turnPlayer = !turnPlayer;
+                        turnCpu = !turnCpu;
+                    }, 1000);
+                    return;
+                }
+                requestAnimationFrame(animateNextTheTurn);
             }
 
             /**
              * * function setup animation imageGoal.
-             * TODO: create function handling animation next the turn
             */
             function animateGoalImage()
             {
@@ -446,7 +502,6 @@
             
             /**
              * * function setup animation imageMiss.
-             * TODO: create function handling animation next the turn
             */
             function animateMissImage()
             {
@@ -470,6 +525,45 @@
                     // stop animate 
                 }
                 requestAnimationFrame(animateMissImage);
+            }
+
+            /**
+            * * Function setup the turn cpu
+             * TODO: handling the turn (CPU)
+            * ! chưa xử lý được gì trong function cpuOn.!!!!!!!!!!!!!!!!!!!!!!!!
+            */
+            function cpuOn()
+            {
+                if (flagCreateSprite) {
+                    playerImage.destroy();
+                    cpuImage.destroy();
+                    ball.visible = true;
+                    // setup create sprite the first
+                    playerImage = new Sprite(id["playerOff.png"]);
+                    playerImage.position.x = (logicalWidth - playerImage.width)/ 2 - 30;
+                    playerImage.position.y = logicalHeight - playerImage.height - 6;
+                    cpuImage = new Sprite(id["cpuOn.png"]);
+                    cpuImage.position.x = (logicalWidth - cpuImage.width)/ 2;
+                    cpuImage.position.y = (logicalHeight - playerImage.height) / 2 - 5;
+                    heightTmp = cpuImage.position.y;
+                    app.stage.addChild(playerImage, cpuImage, area1, area2, area3, area4, area5, area6);
+                    flagCreateSprite = false;
+                }
+
+                if (!flagPointKey) {
+                    // animate cpu
+                    if (!animateGoalkeeper) {
+                        cpuImage.y -= 0.03;
+                        if (cpuImage.y <= heightTmp - 1) {
+                            animateGoalkeeper = true;
+                        }
+                    } else {
+                        cpuImage.y += 0.03;
+                        if (cpuImage.y >= heightTmp) {
+                            animateGoalkeeper = false;
+                        }
+                    }
+                }
             }
 
             /**
@@ -624,12 +718,6 @@
                         }
                     }
                 }
-
-            }
-
-            /* Function setup Cpu turn On*/
-            function cpuOn()
-            {
 
             }
 
